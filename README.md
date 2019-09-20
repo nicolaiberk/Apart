@@ -1,4 +1,6 @@
 # Apart
 Project about Affective Polarisation among Political Elites.
 
-## This will be a great project!
+## Preparing data: Irish Parliamentary speeches
+* create data set for 30th Dail
+* create data set for entities to be identified in speeches
