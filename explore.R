@@ -76,7 +76,7 @@ drive_upload("30th_Dail_incl_positions.csv",
 ##    legislature, though this shouldnt be hard either)
 dict <- c(as.character(unique(data$member_name)),
           as.character(unique(data$party_name)),
-          as.character(unique(data$const_name)))
+          as.character(unique(paste(data$position, data$department))))
 
 ## write to csv and upload to drive
 write.csv(dict, 'entities_30th_Dail.csv')
