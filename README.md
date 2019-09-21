@@ -16,3 +16,4 @@ __Final Outputs:__
 * Sentiment Analysis of these windows
 
 ## Steps ahead:
+* Create Network from directed affective outgroup references
