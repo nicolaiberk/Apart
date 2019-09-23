@@ -25,7 +25,7 @@ opp.tokens <- tokens_select(opp.tokens, stopwords('english'), selection='remove'
 
 ## Targeted sentiment analysis by mentions of ministries, party govts and govt (super primitive)
 
-govt <- c("[Gg]overnment", "Fine Gael", "Labour", "Taoiseach" "[Mm]inist*")
+govt <- c("[Gg]overnment", "Fine Gael", "Labour", "Taoiseach", "[Mm]inist*")
 against_govt_tokens <- tokens_keep(opp.tokens, pattern=phrase(govt), window=20) ## 'window' of 20 tokens accompanying mention
 
 ## Transform targeted tokens to dfm, apply quanteda dictionary and aggregate results by party
