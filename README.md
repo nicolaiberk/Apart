@@ -1,5 +1,5 @@
 # apart [affective polarization in text]
-... a project on Affective Polarisation among Political Elites at of three Research Master's Students at the University of Amsterdam.
+... a project on Affective Polarisation among Political Elites by three Research Master's Students at the University of Amsterdam.
 
 __Time Frame:__ September 2019 - December 2019
 __Final Outputs:__ 
