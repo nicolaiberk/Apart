@@ -1,6 +1,19 @@
-# Apart
-Project about Affective Polarisation among Political Elites.
+# apart [affective polarization in text]
+... a project on Affective Polarisation among Political Elites at of three Research Master's Students at the University of Amsterdam.
 
-## Preparing data: Irish Parliamentary speeches
-* create data set for 30th Dail
-* create data set for entities to be identified in speeches
+__Time Frame:__ September 2019 - December 2019
+__Final Outputs:__ 
+* Measurement tools for affective polarization at the elite level
+* Application of measurement across time for one case
+* Application for relevant research questions
+* Translation of development process to different contexts
+
+## Current Steps:
+### Preparing Data: Irish Parliamentary speeches
+* Subset of the last complete legislative period (30th Dáil)
+* Cleaning Data
+* Creating datasets of windows around out-party reference (MP, Party, etc.) per party
+* Sentiment Analysis of these windows
+
+## Steps ahead:
+* Create Network from directed affective outgroup references
