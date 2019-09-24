@@ -2,6 +2,7 @@ library("googledrive") ## see https://googledrive.tidyverse.org/
 library("readtext")
 library("data.table")
 library("tidyverse")
+library("stringr")
 
 
 ## download data
@@ -29,9 +30,9 @@ data <- fread(my_file, sep="\t",
 
 data["date"] <- as.Date(data[, "date"], format = "%Y-%m-%d")
 
-# restrict to speeches in the 30th D?il
-data <- data[data[, "date"] > as.Date("24-05-2007", format = "%d-%m-%Y"), ]
-data <- data[data[, "date"] < as.Date("25-02-2011", format = "%d-%m-%Y"), ]
+# restrict to speeches in the 30th Dáil
+data <- data[data[, "date"] > as.Date("14-06-2007", format = "%d-%m-%Y"), ]
+data <- data[data[, "date"] < as.Date("29-01-2011", format = "%d-%m-%Y"), ]
 
 
 ## dictionary of speakers
@@ -57,8 +58,8 @@ for (r in 1:nrow(ministers)){
                   data$date >= start &
                   data$date <= end] <- ministers$position[r]
   data$department[data$memberID == member &
-                  data$date >= start &
-                  data$date <= end] <- ministers$department[r]
+                    data$date >= start &
+                    data$date <= end] <- ministers$department[r]
 }
 
 
@@ -74,9 +75,27 @@ drive_upload("30th_Dail_incl_positions.csv",
 ## generate dictionary (matching can be done later on w. the full set, 
 ##    else we would need to collect it by hand w. party switches for every 
 ##    legislature, though this shouldnt be hard either)
-dict <- c(as.character(unique(data$member_name)),
+
+# clean names
+data$member_name_clean <- 
+  str_remove_all(as.character(data$member_name), "\\((.*?)\\)") %>%
+  str_remove_all(" RIP")
+
+# add last names
+data$member_last_name <- str_remove_all(data$member_name_clean, ".* ")
+
+# clean characters
+data$position[is.na(data$position)] <- ""
+data$department[is.na(data$department)] <- ""
+
+
+dict <- c(as.character(unique(data$member_last_name)),
           as.character(unique(data$party_name)),
+          as.character(unique(data$const_name)),
           as.character(unique(paste(data$position, data$department))))
+
+dict <- dict[dict != ""]
+
 
 ## write to csv and upload to drive
 write.csv(dict, 'entities_30th_Dail.csv')
