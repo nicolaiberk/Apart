@@ -1,5 +1,5 @@
 ---
-title: "Notes on Demand-Side Analyses"
+title: "index"
 author: "Mendoza P."
 date: "01/10/2019"
 output: html_document
@@ -123,7 +123,7 @@ grid.arrange(grobs=list(a,b),
 
 
 ### Code for DataViz above:
-```{r dataviz_tut, eval=F}
+```{r dataviz_tut, include=T, echo=T, eval=F}
 # at the moment this plot only covers up to 7 elections, just add a row to expand
 meta <- group_by(csint, IMD1006_NAM) %>% 
   mutate(min2 = IMD1008_YEAR %>% unique %>% sort() %>% nth(2),
@@ -183,4 +183,6 @@ grid.arrange(grobs=list(a,b),
 # dev.off()  #To save your graph
 
 ```
+
+
 
