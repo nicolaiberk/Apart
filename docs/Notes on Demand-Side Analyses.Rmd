@@ -1,5 +1,5 @@
 ---
-title: "index"
+title: "Notes on Demand-Side Analyses"
 author: "Mendoza P."
 date: "01/10/2019"
 output: html_document
