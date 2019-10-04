@@ -1,9 +1,6 @@
-library("googledrive") ## see https://googledrive.tidyverse.org/
-library("readtext")
-library("data.table")
-library("tidyverse")
-library("stringr")
-
+usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
+pkgs <- c('googledrive', 'readtext', 'data.table', 'tidyverse', 'stringr'); for (i in pkgs){usePackage(i)}
+## see https://googledrive.tidyverse.org/
 
 ## download data
 rm(list = ls())
