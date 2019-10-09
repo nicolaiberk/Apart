@@ -87,20 +87,21 @@ kwic_30th_dail <- kwic(tokens_30th_dail, pattern=phrase(entities_30th_dail), win
 
 # Analyses ----------------------------------------------------------
 
-## Create df where 1 row = 1 window preserving original docvars
+## Create df_window where 1 row = 1 window preserving original docvars
 df_window_30th_dail <- merge(df_30th_dail, kwic_30th_dail, by.y="docname", by.x="doc_id")
 df_window_30th_dail$window <- paste(df_window_30th_dail$pre, df_window_30th_dail$keyword, df_window_30th_dail$post, sep=" ")
 
 
 ## Sentiment analysis of windows
 corpus_window_30th_dail<- corpus(df_window_30th_dail, text_field = 'window') #first transform df to corpus
-sentanalysis_30th_dail <- dfm(corpus_window_30th_dail, dictionary=data_dictionary_LSD2015[1:2])
-df_window_30th_dail <- cbind(df_window_30th_dail, convert(sentanalysis_30th_dail, to="data.frame"))
+sentanalysis_30th_dail <- dfm(corpus_window_30th_dail, dictionary=data_dictionary_LSD2015[1:2]) #sentiment analysis
+df_window_30th_dail <- cbind(df_window_30th_dail, convert(sentanalysis_30th_dail, to="data.frame")) # add sentiment analysis to df_window
 
 
 ## Sentiment score = (positive words - negative words)/total tokens in that window
-df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$text)
-df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window_30th_dail$negative)/df_window_30th_dail$ntoken_window
+df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$text) # number of tokens per window
+df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window_30th_dail$negative)/df_window_30th_dail$ntoken_window # sentiment score
+# Now 1 row = 1 window, with docvars + sentiment score
 
 
 ## Write df_window to .csv and upload it to Drive
