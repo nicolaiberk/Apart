@@ -52,19 +52,17 @@ export(dfs, "dail_subset.Rdata")
 export(dfs, "dail_subset.csv")
 drive_upload(media="dail_subset.csv", 
              path="~/Internship AffPol in Text/Data/Ireland/dail_subset.csv")
-} else if (downl==2)
-  {
+} else if (downl==2) {
   drive_download(file = "~/Internship AffPol in Text/Data/Ireland/dail_subset.csv")
   dfs <- readtext("dail_subset.csv", text_field = "speech")
-} else if (downl==3)
-  {
+} else if (downl==3) {
   dfs <- readtext("dail_subset.csv", text_field = "speech")
 }
 
 # 2. Corpus preparation ----------------------------------------------------------
 ### Sentiment Analysis of speeches that refer to the Government ###
-dfs <- dfs[dfs$legper==31,]
-corp_dail <- corpus(dfs)
+df.small <- dfs[dfs$legper==31,]
+corp_dail <- corpus(df.small)
 
 ## First subset corpus - only speeches by non-government(party) MPs
 govt.parties <- c("Fine Gael", "The Labour Party") ## these two parties were in govt
@@ -93,4 +91,9 @@ df_test <- df_test[-19]
 df_test <- df_test[-c(18, 16, 14, 13, 12)]
 
 
+
+
 # Analyses ----------------------------------------------------------
+
+
+
