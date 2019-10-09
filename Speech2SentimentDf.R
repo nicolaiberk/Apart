@@ -18,6 +18,9 @@ pkgs <- c('beepr', 'tidyverse', 'rio', 'tidylog', 'skimr',
           'quanteda', 'readtext', 'Hmisc',
           'googledrive', 'readtext', 'data.table', 'stringr'); for (i in pkgs){usePackage(i)}
 
+dyn.load('/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/jre/lib/server/libjvm.dylib')
+
+
 # __Loading Data -----------------------------------------------------
 # Download again vs. subsample file already existing?
 # Get Data from: 
@@ -60,40 +63,49 @@ drive_upload(media="dail_subset.csv",
 }
 
 # 2. Corpus preparation ----------------------------------------------------------
-### Sentiment Analysis of speeches that refer to the Government ###
-df.small <- dfs[dfs$legper==31,]
-corp_dail <- corpus(df.small)
-
-## First subset corpus - only speeches by non-government(party) MPs
-govt.parties <- c("Fine Gael", "The Labour Party") ## these two parties were in govt
-corp_opposition <- corpus_subset(corp_dail, party_name %nin% govt.parties)
+df_30th_dail <- dfs[dfs$legper==30,] #only 30th legislature
+corpus_30th_dail <- corpus(df_30th_dail)
 
 ## Tokenize corpus, and remove stop punctuation and stopwords
-opp.tokens <- tokens(corp_opposition, remove_punct = T)
-opp.tokens <- tokens_select(opp.tokens, stopwords('english'), selection='remove')
+tokens_30th_dail <- tokens(corpus_30th_dail, remove_punct = T)
+tokens_30th_dail <- tokens_select(tokens_30th_dail, stopwords('english'), selection='remove')
 
 
-# 3. Entity Detection #kwic --------------------
-# Keywords in context (major difference STARTS HERE)
-govt <- c("Government", "Fine Gael", "Labour", "Taoiseach", "Minist*")
+# 3. Entity Detection --------------------
 
-kw_govt <- kwic(opp.tokens, pattern=phrase(govt), window=20)
-head(kw_govt)
-df_test <- merge(df.small, kw_govt, by.y="docname", by.x="doc_id")
-df_test$window <- paste(df_test$pre, df_test$keyword, df_test$post, sep=" ")
-df_test$text <- df_test$window
+## Cleaning dictionary
+entities_30th_dail <- read_csv("entities_30th_Dail.csv")
+entities_30th_dail <- as.vector(entities_30th_dail[[2]])
+entities_30th_dail <- entities_30th_dail[!is.na(entities_30th_dail)]
+entities_30th_dail <- rm_stopwords(entities_30th_dail, Top25Words, separate = F, strip=T) # remove stop words and punctuation
+entities_30th_dail <- tools::toTitleCase(entities_30th_dail) # capitalise all words
+entities_30th_dail <- gsub("(O'.)","\\U\\1",entities_30th_dail,perl=TRUE) # capitalise names starting with O'
 
-corpus.test <- corpus(df_test)
-sent.test <- dfm(corpus.test, dictionary=data_dictionary_LSD2015[1:2])
-
-df_test <- cbind(df_test, as.data.frame(sent.test))
-df_test <- df_test[-19]
-df_test <- df_test[-c(18, 16, 14, 13, 12)]
-
+## Creating windows (match of entities)
+kwic_30th_dail <- kwic(tokens_30th_dail, pattern=phrase(entities_30th_dail), window=20, case_insensitive = F)
 
 
 
 # Analyses ----------------------------------------------------------
 
+## Create df where 1 row = 1 window preserving original docvars
+df_window_30th_dail <- merge(df_30th_dail, kwic_30th_dail, by.y="docname", by.x="doc_id")
+df_window_30th_dail$window <- paste(df_window_30th_dail$pre, df_window_30th_dail$keyword, df_window_30th_dail$post, sep=" ")
 
 
+## Sentiment analysis of windows
+corpus_window_30th_dail<- corpus(df_window_30th_dail, text_field = 'window') #first transform df to corpus
+sentanalysis_30th_dail <- dfm(corpus_window_30th_dail, dictionary=data_dictionary_LSD2015[1:2])
+df_window_30th_dail <- cbind(df_window_30th_dail, convert(sentanalysis_30th_dail, to="data.frame"))
+
+
+## Sentiment score = (positive words - negative words)/total tokens in that window
+df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$text)
+df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window_30th_dail$negative)/df_window_30th_dail$ntoken_window
+
+
+## Write df_window to .csv and upload it to Drive
+
+write.csv(df_window_30th_dail, "df_window_30th_dail.csv")
+drive_upload("df_window_30th_dail.csv",
+             path="~/Internship AffPol in Text/Data/Ireland/")
