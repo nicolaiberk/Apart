@@ -38,7 +38,7 @@ untar(tarfile = "Dail_debates_1919-2013.tar.gz")
 
 ## Read file 
 df <- fread("Dail_debates_1919-2013.tab", sep="\t", 
-            quote="", header=TRUE, showProgress = TRUE, data.table=FALSE, verbose = TRUE)
+            quote="", header=TRUE, showProgress = TRUE, data.table=FALSE, verbose = TRUE, encoding = "UTF-8")
 
 ## Subsetting
 # Take only the ones of the latest 2 legislative periods
@@ -55,15 +55,27 @@ export(dfs, "dail_subset.csv")
 drive_upload(media="dail_subset.csv", 
              path="~/Internship AffPol in Text/Data/Ireland/dail_subset.csv")
 } else if (downl==2) {
-  drive_download(file = "~/Internship AffPol in Text/Data/Ireland/dail_subset.csv")
+  # drive_get("https://drive.google.com/open?id=1jWNIx3PYKEvqzB8iZXgZe_36MmvgTmEd")
+  drive_download("https://drive.google.com/open?id=1jWNIx3PYKEvqzB8iZXgZe_36MmvgTmEd", overwrite=T)
   dfs <- readtext("dail_subset.csv", text_field = "speech")
 } else if (downl==3) {
   dfs <- readtext("dail_subset.csv", text_field = "speech")
 }
 
 # 2. Corpus preparation ----------------------------------------------------------
+<<<<<<< HEAD
 df_30th_dail <- dfs[dfs$legper==30,] #only 30th legislature
 corpus_30th_dail <- corpus(df_30th_dail)
+=======
+### Sentiment Analysis of speeches that refer to the Government ###
+
+df.small <- dfs[dfs$legper==30,]
+corp_dail <- corpus(df.small)
+
+## First subset corpus - only speeches by non-government(party) MPs
+govt.parties <- c("Fine Gael", "The Labour Party") ## these two parties were in govt
+corp_opposition <- corpus_subset(corp_dail, party_name %nin% govt.parties)
+>>>>>>> 344ef8a84877917098aa47728b4073711778c362
 
 ## Tokenize corpus, and remove stop punctuation and stopwords
 tokens_30th_dail <- tokens(corpus_30th_dail, remove_punct = T)
@@ -80,10 +92,28 @@ entities_30th_dail <- rm_stopwords(entities_30th_dail, Top25Words, separate = F,
 entities_30th_dail <- tools::toTitleCase(entities_30th_dail) # capitalise all words
 entities_30th_dail <- gsub("(O'.)","\\U\\1",entities_30th_dail,perl=TRUE) # capitalise names starting with O'
 
+<<<<<<< HEAD
 ## Creating windows (match of entities)
 kwic_30th_dail <- kwic(tokens_30th_dail, pattern=phrase(entities_30th_dail), window=20, case_insensitive = F)
+=======
+kw_govt <- kwic(opp.tokens, pattern=phrase(govt), window=20) # key word in context
+
+# head(kw_govt)
+df_test <- merge(df.small, kw_govt, by.y="docname", by.x="doc_id")
+df_test$window <- paste(df_test$pre, df_test$keyword, df_test$post, sep=" ")
+df_test$text <- df_test$window
+>>>>>>> 344ef8a84877917098aa47728b4073711778c362
 
 
+<<<<<<< HEAD
+=======
+sent.test %>% head()
+df_test %>% head()
+
+df_test <- cbind(df_test, as.data.frame(sent.test))
+df_test <- df_test[-19]
+df_test <- df_test[-c(18, 16, 14, 13, 12)]
+>>>>>>> 344ef8a84877917098aa47728b4073711778c362
 
 # Analyses ----------------------------------------------------------
 
