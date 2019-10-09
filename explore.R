@@ -64,8 +64,9 @@ for (r in 1:nrow(ministers)){
 write.csv(data, file = "30th_Dail_incl_positions.csv")
 
 ## upload into drive
-drive_upload("30th_Dail_incl_positions.csv", 
-             path = "https://drive.google.com/open?id=1jOF7BOTbzJwDXALbYte2uwXimfkFqwQF/")
+drive_upload("30th_Dail_incl_positions.csv",
+             path = "https://drive.google.com/open?id=1jOF7BOTbzJwDXALbYte2uwXimfkFqwQF/",
+             overwrite = T)
 
 
 
@@ -97,4 +98,5 @@ dict <- dict[dict != ""]
 ## write to csv and upload to drive
 write.csv(dict, 'entities_30th_Dail.csv')
 drive_upload("entities_30th_Dail.csv", 
-             path = "https://drive.google.com/open?id=1jOF7BOTbzJwDXALbYte2uwXimfkFqwQF/")
+             path = "https://drive.google.com/open?id=1jOF7BOTbzJwDXALbYte2uwXimfkFqwQF/",
+             overwrite = T)
