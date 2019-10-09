@@ -18,7 +18,6 @@ pkgs <- c('beepr', 'tidyverse', 'rio', 'tidylog', 'skimr',
           'quanteda', 'readtext', 'Hmisc',
           'googledrive', 'readtext', 'data.table', 'stringr'); for (i in pkgs){usePackage(i)}
 
-dyn.load('/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home/jre/lib/server/libjvm.dylib')
 
 
 # __Loading Data -----------------------------------------------------
