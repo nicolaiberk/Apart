@@ -99,7 +99,7 @@ df_window_30th_dail <- cbind(df_window_30th_dail, convert(sentanalysis_30th_dail
 
 
 ## Sentiment score = (positive words - negative words)/total tokens in that window
-df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$text) # number of tokens per window
+df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$window) # number of tokens per window
 df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window_30th_dail$negative)/df_window_30th_dail$ntoken_window # sentiment score
 # Now 1 row = 1 window, with docvars + sentiment score
 
