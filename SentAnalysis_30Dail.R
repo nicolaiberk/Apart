@@ -16,7 +16,7 @@ rm(list=ls())
 usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
 pkgs <- c('beepr', 'tidyverse', 'rio', 'tidylog', 'skimr',
           'quanteda', 'readtext', 'Hmisc',
-          'googledrive', 'readtext', 'data.table', 'stringr'); for (i in pkgs){usePackage(i)}
+          'googledrive', 'readtext', 'data.table', 'stringr', 'qdap'); for (i in pkgs){usePackage(i)}
 
 
 
