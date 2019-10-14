@@ -16,7 +16,7 @@ rm(list=ls())
 usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
 pkgs <- c('beepr', 'tidyverse', 'rio', 'tidylog', 'skimr',
           'quanteda', 'readtext', 'Hmisc',
-          'googledrive', 'readtext', 'data.table', 'stringr'); for (i in pkgs){usePackage(i)}
+          'googledrive', 'readtext', 'data.table', 'stringr', 'qdap'); for (i in pkgs){usePackage(i)}
 
 
 
@@ -99,7 +99,7 @@ df_window_30th_dail <- cbind(df_window_30th_dail, convert(sentanalysis_30th_dail
 
 
 ## Sentiment score = (positive words - negative words)/total tokens in that window
-df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$text) # number of tokens per window
+df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$window) # number of tokens per window
 df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window_30th_dail$negative)/df_window_30th_dail$ntoken_window # sentiment score
 # Now 1 row = 1 window, with docvars + sentiment score
 
