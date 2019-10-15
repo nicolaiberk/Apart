@@ -90,3 +90,4 @@ write.csv(dail30_topics, file = "dail30_topics.csv")
 drive_upload("dail30_topics.csv", 
              path = "https://drive.google.com/open?id=1jOF7BOTbzJwDXALbYte2uwXimfkFqwQF/",
              overwrite = T)
+
