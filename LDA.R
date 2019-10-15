@@ -87,3 +87,6 @@ dail30 <- dail30[dail30$speechID %in% dail30_wide$document, ] # remove dropped o
 ### add topics to initial dataframe, based on speechID's
 dail30_topics <- cbind(dail30, dail30_wide)
 write.csv(dail30_topics, file = "dail30_topics.csv")
+drive_upload("dail30_topics.csv", 
+             path = "https://drive.google.com/open?id=1jOF7BOTbzJwDXALbYte2uwXimfkFqwQF/",
+             overwrite = T)
