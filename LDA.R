@@ -12,8 +12,8 @@ drive_download(file = fn, overwrite = T)
 ## load data
 dail30 <- read.csv('30th_Dail_incl_positions.csv')
 
-### subset for smoother workflow (get rid of later)
-dail30 <- dail30[sample(nrow(dail30), size = 1000, replace = F),]
+# ### subset for smoother workflow
+# dail30 <- dail30[sample(nrow(dail30), size = 1000, replace = F),]
 
 ## transform into document-term-matrix
 dail30_dtm <- dail30$speech %>%
@@ -32,7 +32,7 @@ dail30_dtm <- dail30_dtm[rowSums(dail30_dtm) > 10, ]
 ## get perfect n of topics
 result <- FindTopicsNumber(
   dail30_dtm,
-  topics = seq(from = 2, to = 50, by = 1),
+  topics = seq(from = 2, to = 50, by = 5),
   metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
   method = "Gibbs",
   control = list(seed = 77),
