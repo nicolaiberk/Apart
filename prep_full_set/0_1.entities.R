@@ -59,14 +59,6 @@ dict <- c(as.character(unique(data$member_full_name))
 
 dict <- dict[dict != ""]
 
-
-data <- as.vector(dict)
-data <- data[!is.na(data)]
-data <- rm_stopwords(data, Top25Words, separate = F, strip=T) # remove stop words and punctuation
-data <- tools::toTitleCase(data) # capitalise all words
-data <- gsub("(O'.)","\\U\\1",data,perl=TRUE) # capitalise names starting with O'
-
-
 ## write to csv and upload to drive
 write.csv(data, 'entities_full_Dail.csv')
 if (upload == T){
