@@ -38,7 +38,7 @@ data["date"] <- as.Date(data[, "date"], format = "%Y-%m-%d")
 ## dictionary of speakers
 
 if (update == T){
-  fn <- "https://drive.google.com/open?id=1TWyaYjbu_rz5wXsY2nmR0gQO9BAquOkE"
+  fn <- "~/Internship AffPol in Text/Data/Ireland/Dail_debates_1937-2011_ministers.tab"
   drive_get(fn)
   drive_download(file = fn, overwrite = T)
 }
