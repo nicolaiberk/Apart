@@ -56,11 +56,12 @@ dict <- c(as.character(unique(data$member_full_name))
           , as.character(unique(data$member_last_name))
           , as.character(unique(data$party_name))
 )
+rm(data)
 
 dict <- dict[dict != ""]
 
 ## write to csv and upload to drive
-write.csv(data, 'entities_full_Dail.csv')
+write.csv(dict, 'entities_full_Dail.csv')
 if (upload == T){
 drive_upload("entities_full_Dail.csv", 
              path = "~/Internship AffPol in Text/Data/Ireland/",
