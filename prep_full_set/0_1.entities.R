@@ -78,9 +78,7 @@ drive_upload("full_Dail_incl_positions.csv",
 }
 
 
-## generate dictionary (matching can be done later on w. the full set, 
-##    else we would need to collect it by hand w. party switches for every 
-##    legislature, though this shouldnt be hard either)
+## generate dictionary
 
 # clean names
 data$member_name_clean <- 
@@ -107,8 +105,6 @@ data$department[is.na(data$department)] <- ""
 dict <- c(as.character(unique(data$member_full_name))
           , as.character(unique(data$member_last_name))
           , as.character(unique(data$party_name))
-          #, as.character(unique(data$const_name))
-          #, as.character(unique(paste(data$position, data$department)))
 )
 
 dict <- dict[dict != ""]
