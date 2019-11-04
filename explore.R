@@ -82,15 +82,21 @@ data$member_name_clean <-
 # add last names
 data$member_last_name <- str_remove_all(data$member_name_clean, ".* ")
 
+# add full names
+data$member_full_name <- str_remove_all(data$member_name_clean, "Ms. |Mr. |Dr. |Mrs. ")
+
+
 # clean characters
 data$position[is.na(data$position)] <- ""
 data$department[is.na(data$department)] <- ""
 
 
-dict <- c(as.character(unique(data$member_last_name)),
-          as.character(unique(data$party_name)),
-          as.character(unique(data$const_name)),
-          as.character(unique(paste(data$position, data$department))))
+dict <- c(as.character(unique(data$member_full_name))
+          , as.character(unique(data$member_last_name))
+          , as.character(unique(data$party_name))
+          #, as.character(unique(data$const_name))
+          #, as.character(unique(paste(data$position, data$department)))
+          )
 
 dict <- dict[dict != ""]
 
