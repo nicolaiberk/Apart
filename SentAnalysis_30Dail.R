@@ -19,7 +19,6 @@ pkgs <- c('beepr', 'tidyverse', 'rio', 'tidylog', 'skimr',
           'googledrive', 'readtext', 'data.table', 'stringr', 'qdap'); for (i in pkgs){usePackage(i)}
 
 
-
 # __Loading Data -----------------------------------------------------
 # Download again vs. subsample file already existing?
 # Get Data from: 
@@ -72,6 +71,11 @@ tokens_30th_dail <- tokens_select(tokens_30th_dail, stopwords('english'), select
 
 # 3. Entity Detection --------------------
 
+## update data
+fn <- "https://drive.google.com/open?id=1M7PHb1Jg04wwugJE-XF-19XVVi7Saiiy"
+drive_get(fn)
+drive_download(file = fn, overwrite = T)
+
 ## Cleaning dictionary
 entities_30th_dail <- read_csv("entities_30th_Dail.csv")
 entities_30th_dail <- as.vector(entities_30th_dail[[2]])
@@ -108,4 +112,5 @@ df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window
 
 write.csv(df_window_30th_dail, "df_window_30th_dail.csv")
 drive_upload("df_window_30th_dail.csv",
-             path="~/Internship AffPol in Text/Data/Ireland/")
+             path="~/Internship AffPol in Text/Data/Ireland/",
+             overwrite = T)
