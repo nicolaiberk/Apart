@@ -12,12 +12,12 @@
 # __Loading Packages -------------------------------------------------
 rm(list=ls())
 usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
-pkgs <- c('beepr', 'tidyverse', 'tidylog','rio', 'tidylog', 'skimr',
-          'quanteda', 'readtext', 'clipr',
+pkgs <- c('beepr', 'tidyverse', 'tidylog','rio', 'tidylog',# 'skimr',
+          'quanteda', 'readtext', 'clipr', # clipr to read and write clipboard content
           'igraph', 'extrafont', 'RColorBrewer',
           'googledrive', 'readtext', 'data.table', 'stringr'); for (i in pkgs){usePackage(i)}
 
-# clipr to read and write clipboard content
+
 
 # Analyses ----------------------------------------------------------
 
@@ -27,9 +27,11 @@ pkgs <- c('beepr', 'tidyverse', 'tidylog','rio', 'tidylog', 'skimr',
 
 
 ### GET ONLINE DATA
-drive_download("https://drive.google.com/open?id=18MkmIgE8d5kzZRxB_57uW23Ke4amnE1T", overwrite=T)
+drive_find(pattern="df_window_30th_dail.csv", n_max=5)
+drive_download("https://drive.google.com/open?id=1vu5q-ZeRo7L0wDiZhfM9HB3Ikv8tgdg6", overwrite=T) # update if necessary
 wind_df <- import("df_window_30th_dail.csv", encoding = "UTF-8")
 # entity <- import("entities_30th_Dail.csv", encoding = "UTF-8")
+
 
 # CORRECT MISSPECIFICATION OF PARTIES:
 # "Mr. Eamon Gilmore" > Worker's party > labour
@@ -39,7 +41,8 @@ wind_df <- import("df_window_30th_dail.csv", encoding = "UTF-8")
 
 wind_df$party_name[wind_df$member_name %in% c("Mr. Eamon Gilmore", "Mr. Pat Rabbitte", "Ms. Kathleen Lynch", "Ms. Liz McManus")] <- "The Labour Party"
 
-# Namedictionary take the names from the speakers 
+# Namedictionary 
+# take the names from the speakers 
 nams <- tibble(name=str_remove_all(as.character(wind_df$member_name %>% unique()), "\\((.*?)\\)") %>% 
                  str_remove_all(" RIP"),
                surname=(str_remove_all(as.character(wind_df$member_name %>% unique()), "\\((.*?)\\)") %>% 
@@ -51,8 +54,8 @@ nams$oname <- as.character(wind_df$member_name %>% unique())
 # Keep only MP references - Exclude all party/ministry/county references
 wind_df_mp <- wind_df %>% filter(pattern %in% nams$surname)
 
-# Check if remaining can be recognized as names
-# MPs who were talked about but not talking
+## Check if remaining can be recognized as names
+# MPs who were talked about but not talking [this sort of heas to be zero because our entity recognition dict is based on the ppl talking]
 (wind_df_mp$pattern %>% unique)[!(wind_df_mp$pattern %>% unique) %in% nams$surname]
 
 # MPs who were talking but not talked about
@@ -67,8 +70,8 @@ names(wind_df_mp_nams)[names(wind_df_mp_nams) == c("name", "surname")] <- c("nam
 # Wait for reparation of dictionary for kwic   ----------------------------------------------------------------------------
 # for now I'll kick out all the MP's who share surnames
 temp <- wind_df_mp_nams[,c("member_name","surname_speaker")] %>% unique %>% arrange(surname_speaker)
-duplics <- (temp$surname_speaker %>% unique)[temp$surname_speaker %>% table>1] %>% sort
-df <- wind_df_mp_nams %>% tidylog::filter(!surname_speaker %in% duplics & !pattern %in% duplics)
+duplics <- temp$surname_speaker[temp$surname_speaker %>% table>1] %>% unique %>% sort
+df <- wind_df_mp_nams %>% filter(!surname_speaker %in% duplics & !pattern %in% duplics)
 
 # Match full names to the recipients
 df <- left_join(df, nams,
