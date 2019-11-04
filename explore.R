@@ -17,7 +17,8 @@ my_file <- "Dail_debates_1919-2013.tab"
 print(paste(round(file.info(my_file)$size  / 2^30,3), 'gigabytes'))
 
 
-# read in the first few lines
+
+# read in
 data <- fread(my_file, sep="\t", 
               quote="", 
               header=TRUE, 
@@ -33,9 +34,13 @@ data <- data[data[, "date"] < as.Date("29-01-2011", format = "%d-%m-%Y"), ]
 
 
 ## dictionary of speakers
+update <- T # change this to  'F' if updating not necessary
+
+if (update == T){
 fn <- "https://drive.google.com/open?id=1TWyaYjbu_rz5wXsY2nmR0gQO9BAquOkE"
 drive_get(fn)
 drive_download(file = fn, overwrite = T)
+}
 
 ministers <- fread("Dail_debates_1937-2011_ministers.tab")
 
@@ -47,6 +52,7 @@ ministers$end_date <- as.Date(ministers$end_date, format = "%Y-%m-%d")
 data$position <- NA
 data$department <- NA
 
+# maybe there is a more efficient way to assign this?
 for (r in 1:nrow(ministers)){
   member <- ministers$memberID[r]
   start  <- ministers$start_date[r]
@@ -79,11 +85,16 @@ data$member_name_clean <-
   str_remove_all(as.character(data$member_name), "\\((.*?)\\)") %>%
   str_remove_all(" RIP")
 
-# add last names
-data$member_last_name <- str_remove_all(data$member_name_clean, ".* ")
+# add 'deputy' to last names
+data$member_last_name <- 
+  str_remove_all(data$member_name_clean, ".* ") %>%
+  paste('Deputy', ., sep = " ")
+
 
 # add full names
-data$member_full_name <- str_remove_all(data$member_name_clean, "Ms. |Mr. |Dr. |Mrs. ")
+data$member_full_name <- 
+  str_remove_all(data$member_name_clean, "Ms. |Mr. |Dr. |Mrs. ") %>%
+  paste('Deputy', ., sep = " ")
 
 
 # clean characters
