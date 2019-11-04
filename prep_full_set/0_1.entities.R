@@ -13,12 +13,12 @@ update = F # set F if update should be skipped
 upload = F # set F if you do not want to upload changes
 
 if (update == T){
-fn <- "~/Internship AffPol in Text/Data/Ireland/Dail_debates_1919-2013.tar.gz"
-drive_get(fn)
-drive_download(file = fn, overwrite = T)
+  fn <- "~/Internship AffPol in Text/Data/Ireland/Dail_debates_1919-2013.tar.gz"
+  drive_get(fn)
+  drive_download(file = fn, overwrite = T)
 
-## unzip
-untar("Dail_debates_1919-2013.tar.gz")
+  ## unzip
+  untar("Dail_debates_1919-2013.tar.gz")
 }
 
 ## inspect
