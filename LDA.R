@@ -32,7 +32,7 @@ dail30_dtm <- dail30_dtm[rowSums(dail30_dtm) > 10, ]
 ## get perfect n of topics
 result <- FindTopicsNumber(
   dail30_dtm,
-  topics = seq(from = 2, to = 50, by = 5),
+  topics = seq(from = 50, to = 300, by = 50),
   metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
   method = "Gibbs",
   control = list(seed = 77),
@@ -48,7 +48,7 @@ ggsave('plots/LDA_bestfit.png', width = 400, height = 150, units = 'mm')
 
 
 ## lda
-dail30_lda <- LDA(dail30_dtm, k = 37, control = list(seed = 1234))
+dail30_lda <- LDA(dail30_dtm, k = ???, control = list(seed = 1234))
 
 ## generate term probabilities per topic
 dail30_topics <- tidy(dail30_lda, matrix = "beta")
