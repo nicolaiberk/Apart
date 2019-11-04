@@ -14,6 +14,7 @@ source("0_1.entities.R")
 
 ## construct window frame
 
+
 ## subset & aggregate window frame to desired level
 # startperiod = 
 # endperiod =
