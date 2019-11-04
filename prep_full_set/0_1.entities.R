@@ -13,7 +13,7 @@ update = F # set F if update should be skipped
 upload = F # set F if you do not want to upload changes
 
 if (update == T){
-fn <- "https://drive.google.com/open?id=1bZy0uF8i-W3a4wQAJQ1tefek4Rcy_K0k"
+fn <- "~/Internship AffPol in Text/Data/Ireland/Dail_debates_1919-2013.tar.gz"
 drive_get(fn)
 drive_download(file = fn, overwrite = T)
 
