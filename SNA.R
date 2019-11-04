@@ -32,10 +32,10 @@ wind_df <- import("df_window_30th_dail.csv", encoding = "UTF-8")
 # entity <- import("entities_30th_Dail.csv", encoding = "UTF-8")
 
 # CORRECT MISSPECIFICATION OF PARTIES:
-    # "Mr. Eamon Gilmore" > Worker's party > labour
-    # "Mr. Pat Rabbitte" > Democratic Left > labour
-    # "Ms. Kathleen Lynch" > Democratic Left > labour
-    # "Ms. Liz McManus" > Democratic Left > labour
+# "Mr. Eamon Gilmore" > Worker's party > labour
+# "Mr. Pat Rabbitte" > Democratic Left > labour
+# "Ms. Kathleen Lynch" > Democratic Left > labour
+# "Ms. Liz McManus" > Democratic Left > labour
 
 wind_df$party_name[wind_df$member_name %in% c("Mr. Eamon Gilmore", "Mr. Pat Rabbitte", "Ms. Kathleen Lynch", "Ms. Liz McManus")] <- "The Labour Party"
 
@@ -43,8 +43,8 @@ wind_df$party_name[wind_df$member_name %in% c("Mr. Eamon Gilmore", "Mr. Pat Rabb
 nams <- tibble(name=str_remove_all(as.character(wind_df$member_name %>% unique()), "\\((.*?)\\)") %>% 
                  str_remove_all(" RIP"),
                surname=(str_remove_all(as.character(wind_df$member_name %>% unique()), "\\((.*?)\\)") %>% 
-                        str_remove_all(" RIP") %>% strsplit(split=" ") %>% 
-                        lapply(function(x) {x[length(x)]}) %>% unlist),
+                          str_remove_all(" RIP") %>% strsplit(split=" ") %>% 
+                          lapply(function(x) {x[length(x)]}) %>% unlist),
                party=(wind_df[c("member_name", "party_name")] %>% distinct)[,2])
 nams$oname <- as.character(wind_df$member_name %>% unique())
 
@@ -117,7 +117,7 @@ net_df <- df %>%
             mpties= n(),
             sentimentcv = cv(sentiment, na.rm=T),
             sentiment = mean(sentiment, na.rm=T),
-            ) %>%
+  ) %>%
   mutate(senti2 = sentiment^2) %>% 
   arrange(senti2) # to have the thinnest lines in the foreground
 
@@ -172,22 +172,22 @@ plot.igraph(net,
             vertex.shape=parties$govt[match(V(net)$party_name, parties$party_name)],
             edge.arrow.size=.4,
             edge.color = brewer.pal(11,name="RdBu")[as.numeric(cut(E(net)$sentiment,breaks = 11))],
-            )
+)
 # dev.off()
 
 a <- plot.igraph(net, 
-            vertex.color = "blue",
-            vertex.size = nodes$vote_share*100,
-            vertex.label.color = "black",
-            vertex.label=nodes$party_name,
-            edge.curved = 0.15, 
-            edge.color = adjustcolor("SkyBlue2", alpha.f = .7),
-            vertex.label.degree zaggdcvc y = -pi/1.5,
-            vertex.label.dist = 4,
-            edge.arrow.size = 9,
-            edge.arrow.width = 2,
-            edge.width = net_df$weight*2
-            )
+                 vertex.color = "blue",
+                 vertex.size = nodes$vote_share*100,
+                 vertex.label.color = "black",
+                 vertex.label=nodes$party_name,
+                 edge.curved = 0.15, 
+                 edge.color = adjustcolor("SkyBlue2", alpha.f = .7),
+                 vertex.label.degree zaggdcvc y = -pi/1.5,
+                 vertex.label.dist = 4,
+                 edge.arrow.size = 9,
+                 edge.arrow.width = 2,
+                 edge.width = net_df$weight*2
+)
 
 
 plot.igraph(net,
