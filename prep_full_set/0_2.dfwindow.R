@@ -53,16 +53,16 @@ dfs <- fread("Dail_debates_1919-2013.tab",
              data.table=FALSE, 
              verbose = TRUE)
 
-dfs$datef <- as.Date(dfs$date) # making sure that date variable is in date format
 
 
 if (subset == T){
   dfs <- dfs[sample(nrow(dfs), 1000), ]
 }
 
+dfs$date <- as.Date(dfs$date) # making sure that date variable is in date format
 
 # 2. Corpus preparation ----------------------------------------------------------
-corpus <- corpus(dfs, text_field = "speech")
+corpus <- corpus(dfs, text_field = "speech", docid_field = "speechID")
 
 ## Tokenize corpus, and remove stop punctuation and stopwords
 tokens <- tokens(corpus, remove_punct = T)
@@ -72,18 +72,20 @@ tokens <- tokens_select(tokens, stopwords('english'), selection='remove')
 # 3. Entity Detection --------------------
 
 ## update data
-if (downl > 1){
-  fn <- "~/Internship AffPol in Text/Data/Ireland/entities_Dail.csv"
+if (downl < 3){
+  fn <- "~/Internship AffPol in Text/Data/Ireland/entities_full_Dail.csv"
   drive_get(fn)
   drive_download(file = fn, overwrite = T)
 }
-## Cleaning dictionary
-entities <- read_csv("entities_30th_Dail.csv")
-entities <- as.vector(entities_30th_dail[[2]])
-entities <- entities_30th_dail[!is.na(entities_30th_dail)]
-entities <- rm_stopwords(entities_30th_dail, Top25Words, separate = F, strip=T) # remove stop words and punctuation
-entities <- tools::toTitleCase(entities_30th_dail) # capitalise all words
-entities <- gsub("(O'.)","\\U\\1",entities_30th_dail,perl=TRUE) # capitalise names starting with O'
+
+entities <- read.csv("entities_full_Dail.csv")
+entities <- entities[2]
+entities <- entities[!is.na(entities)]
+## not sure why this is necessary, might even be bad if last name == stopword
+# entities <- rm_stopwords(entities, Top25Words, separate = F, strip=T) # remove stop words and punctuation
+entities <- tools::toTitleCase(entities) # capitalise all words
+entities <- gsub("(O'.)","\\U\\1",entities,perl=TRUE) # capitalise names starting with O'
+
 
 ## Creating windows (match of entities)
 kwic <- kwic(tokens, pattern=phrase(entities), window=20, case_insensitive = F)
@@ -92,32 +94,14 @@ kwic <- kwic(tokens, pattern=phrase(entities), window=20, case_insensitive = F)
 
 # Analyses ----------------------------------------------------------
 
-#####################################################################
-### PROBLEMS here, I think dfs != df in SentAnalysis_30Dail
-### also make only df_window here, SentimentAnalysis in different file 
-#####################################################################
-
 
 ## Create df_window where 1 row = 1 window preserving original docvars
-df_window <- merge(dfs, kwic, by.y="docname", by.x="doc_id")
-df_window <- paste(dfs$pre, df_window_30th_dail$keyword, df_window_30th_dail$post, sep=" ")
-
-
-## Sentiment analysis of windows
-corpus_window_30th_dail<- corpus(df_window_30th_dail, text_field = 'window') #first transform df to corpus
-sentanalysis_30th_dail <- dfm(corpus_window_30th_dail, dictionary=data_dictionary_LSD2015[1:2]) #sentiment analysis
-df_window_30th_dail <- cbind(df_window_30th_dail, convert(sentanalysis_30th_dail, to="data.frame")) # add sentiment analysis to df_window
-
-
-## Sentiment score = (positive words - negative words)/total tokens in that window
-df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$window) # number of tokens per window
-df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window_30th_dail$negative)/df_window_30th_dail$ntoken_window # sentiment score
-# Now 1 row = 1 window, with docvars + sentiment score
+df_window <- merge(dfs, kwic, by.x="speechID", by.y="docname") # THIS DOES NOT WORK
+df_window <- paste(dfs$pre, df_window$keyword, df_window$post, sep=" ")
 
 
 ## Write df_window to .csv and upload it to Drive
-
-write.csv(df_window_30th_dail, "df_window_30th_dail.csv")
-drive_upload("df_window_30th_dail.csv",
+write.csv(df_window, "df_window.csv")
+drive_upload("df_window.csv",
              path="~/Internship AffPol in Text/Data/Ireland/",
              overwrite = T)
