@@ -52,6 +52,9 @@ for (i in 1:nrow(names)) {
 names[170:178,'match'] <-  unique(df$party_name) # add party names to column of matches
 
 write.csv(names, 'entities_30th_dail.csv')
+drive_upload("entities_30th_dail.csv",
+             path="~/Internship AffPol in Text/Data/Ireland/",
+             overwrite = T)
 
 
 

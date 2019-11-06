@@ -72,17 +72,19 @@ tokens_30th_dail <- tokens_select(tokens_30th_dail, stopwords('english'), select
 # 3. Entity Detection --------------------
 
 ## update data
-fn <- "https://drive.google.com/open?id=1M7PHb1Jg04wwugJE-XF-19XVVi7Saiiy"
+fn <- "https://drive.google.com/open?id=1vcR0GAE-nxjJo8AqJp-raP6B8hSthEdl"
 drive_get(fn)
 drive_download(file = fn, overwrite = T)
 
 ## Cleaning dictionary
-entities_30th_dail <- read_csv("entities_30th_Dail.csv")
-entities_30th_dail <- as.vector(entities_30th_dail[[2]])
+entities_30th_dail <- read.csv("entities_30th_dail.csv", row.names =1,stringsAsFactors = F)
+entities_30th_dail <- c(entities_30th_dail$match, entities_30th_dail$alternativematch)
 entities_30th_dail <- entities_30th_dail[!is.na(entities_30th_dail)]
-entities_30th_dail <- rm_stopwords(entities_30th_dail, Top25Words, separate = F, strip=T) # remove stop words and punctuation
-entities_30th_dail <- tools::toTitleCase(entities_30th_dail) # capitalise all words
-entities_30th_dail <- gsub("(O'.)","\\U\\1",entities_30th_dail,perl=TRUE) # capitalise names starting with O'
+
+
+#entities_30th_dail <- rm_stopwords(entities_30th_dail, Top25Words, separate = F, strip=T) # remove stop words and punctuation
+#entities_30th_dail <- tools::toTitleCase(entities_30th_dail) # capitalise all words
+#entities_30th_dail <- gsub("(O'.)","\\U\\1",entities_30th_dail,perl=TRUE) # capitalise names starting with O'
 
 ## Creating windows (match of entities)
 kwic_30th_dail <- kwic(tokens_30th_dail, pattern=phrase(entities_30th_dail), window=20, case_insensitive = F)
@@ -104,7 +106,9 @@ df_window_30th_dail <- cbind(df_window_30th_dail, convert(sentanalysis_30th_dail
 
 ## Sentiment score = (positive words - negative words)/total tokens in that window
 df_window_30th_dail$ntoken_window <- ntoken(df_window_30th_dail$window) # number of tokens per window
-df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window_30th_dail$negative)/df_window_30th_dail$ntoken_window # sentiment score
+df_window_30th_dail$sentiment_score <- (df_window_30th_dail$positive - df_window_30th_dail$negative)/df_window_30th_dail$ntoken_window
+df_window_30th_dail$log_sentiment_score <- log((df_window_30th_dail$positive + 0.5)/(df_window_30th_dail$negative + 0.5))
+
 # Now 1 row = 1 window, with docvars + sentiment score
 
 
