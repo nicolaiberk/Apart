@@ -22,7 +22,7 @@ pkgs <- c('beepr', 'tidyverse', 'rio', 'tidylog', 'skimr',
 downl <- 3
 
 # subset (if T: sample 1000 cases)
-subset <- T
+subset <- F
 
 if (downl == 1){
   # These lines downlad the original data from the website; unpack them; and read them into the program
