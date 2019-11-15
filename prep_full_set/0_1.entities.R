@@ -1,16 +1,25 @@
-"
-construct dictionary of entities
-"
-
-usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
-pkgs <- c('googledrive', 'readtext', 'data.table', 'tidyverse', 'stringr', 'qdap'); for (i in pkgs){usePackage(i)}
-
-
-## download data
-rm(list = ls())
+# Title:
+# Context: APART
+# Author: Nicolai B.
+# Date: Fri Nov 15 13:42:14 2019
+# 0. Content ---------------------------------------------------------
+# 1. Preparation
+#
+#
+# 1. Preparation -----------------------------------------------------
+# __Loading Packages -------------------------------------------------
 setwd("~/GitHub/samunico/Apart/data")
+rm(list=ls())
+usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
+for (i in c('googledrive', 'readtext', 'data.table', 'tidyverse', 'stringr', 'qdap')){usePackage(i)}
+
+# __global vars  -----------------------------------------------------
 update = F # set F if update should be skipped
 upload = F # set F if you do not want to upload changes
+
+
+# __Loading Data -----------------------------------------------------
+setwd("~/GitHub/samunico/Apart/data")
 
 if (update == T){
   fn <- "~/Internship AffPol in Text/Data/Ireland/Dail_debates_1919-2013.tar.gz"
@@ -21,18 +30,17 @@ if (update == T){
   untar("Dail_debates_1919-2013.tar.gz")
 }
 
-## inspect
-my_file <- "Dail_debates_1919-2013.tab"
-print(paste(round(file.info(my_file)$size  / 2^30,3), 'gigabytes'))
-
 ## read in
-data <- fread(my_file, sep="\t", 
+data <- fread("Dail_debates_1919-2013.tab", 
+              sep="\t", 
               quote="", 
               header=TRUE, 
               showProgress = TRUE, 
               data.table=FALSE, 
               verbose = TRUE)
 
+
+# 2. Cleaning ----------------------------------------------------------
 data["date"] <- as.Date(data[, "date"], format = "%Y-%m-%d")
 
 # clean names
@@ -60,7 +68,7 @@ rm(data)
 
 dict <- dict[dict != ""]
 
-## write to csv and upload to drive
+# 3. Export ------------------------------------------------------------
 write.csv(dict, 'entities_full_Dail.csv')
 if (upload == T){
 drive_upload("entities_full_Dail.csv", 
