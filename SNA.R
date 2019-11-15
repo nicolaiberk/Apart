@@ -26,12 +26,13 @@ pkgs <- c('beepr', 'tidyverse', 'tidylog','rio', 'tidylog',# 'skimr',
 
 
 
-### GET ONLINE DATA
-drive_find(pattern="df_window_30th_dail.csv", n_max=5)
-drive_download("https://drive.google.com/open?id=1vu5q-ZeRo7L0wDiZhfM9HB3Ikv8tgdg6", overwrite=T) # update if necessary
+### Get up2date windows DF
+id <- drive_find(pattern="df_window_30th_dail.csv", n_max=5)$id
+drive_download(paste0("https://drive.google.com/open?id=", id), overwrite=T) # update if necessary
 wind_df <- import("df_window_30th_dail.csv", encoding = "UTF-8")
 # entity <- import("entities_30th_Dail.csv", encoding = "UTF-8")
 
+# get 
 
 # CORRECT MISSPECIFICATION OF PARTIES:
 # "Mr. Eamon Gilmore" > Worker's party > labour
@@ -40,6 +41,7 @@ wind_df <- import("df_window_30th_dail.csv", encoding = "UTF-8")
 # "Ms. Liz McManus" > Democratic Left > labour
 
 wind_df$party_name[wind_df$member_name %in% c("Mr. Eamon Gilmore", "Mr. Pat Rabbitte", "Ms. Kathleen Lynch", "Ms. Liz McManus")] <- "The Labour Party"
+
 
 # Namedictionary 
 # take the names from the speakers 
@@ -53,6 +55,7 @@ nams$oname <- as.character(wind_df$member_name %>% unique())
 
 # Keep only MP references - Exclude all party/ministry/county references
 wind_df_mp <- wind_df %>% filter(pattern %in% nams$surname)
+wind_df$pattern %>% unique
 
 ## Check if remaining can be recognized as names
 # MPs who were talked about but not talking [this sort of heas to be zero because our entity recognition dict is based on the ppl talking]
@@ -60,6 +63,7 @@ wind_df_mp <- wind_df %>% filter(pattern %in% nams$surname)
 
 # MPs who were talking but not talked about
 (nams$surname %>% unique)[!(nams$surname %>% unique) %in% (wind_df_mp$pattern %>% unique)]
+
 
 # Add surnames to the speakers
 wind_df_mp_nams <- left_join(wind_df_mp, nams %>% select(-party),
@@ -79,13 +83,14 @@ df <- left_join(df, nams,
 names(df)[match(c("name", "oname", "party"), names(df))] <- c("name_recipient", "oname_recipient", "party_recipient")
 
 
-# Create Network dataframe ------------------
-# Creating Nodes datasets
+# Aggregation to Network dataframe ----------
+# 1. Creating Nodes datasets
 nodes_party <- df %>% select(party_name, name_speaker) %>% distinct %>% group_by(party_name) %>% summarize(seats=n())
 nodes <- df[c("name_speaker","surname_speaker","party_name")] %>% distinct
 
-# Creating Edges datasets
-# Parties
+
+# 2. Creating Edges datasets
+# A) Parties
 net_df_party <- df %>% 
   group_by(party_name, doc_id, party_recipient) %>%                       # per speech, per outgroup reference, 1 sentiment score.
   summarize(sentiment = mean(sentiment_score, na.rm=T)) %>%   #
@@ -100,29 +105,39 @@ cv <- function(x, na.rm=F) {sd(x, na.rm=na.rm)/mean(x, na.rm=na.rm)} # Coefficie
 marg <- function(x,z=20) {
   return((log(x*(x>0)+1)/log(z+1))*(x<=z)*(x>0)+(x>z))}
 
-net_df %>% 
-  mutate(certaintycv=(1-sentimentcv)*(sentimentcv<1)*(sentimentcv>0),
-         certaitnymentions=marg(mentions),
-         certainty=certaintycv*certaitnymentions) %>% summary
 
-(net_df$sentimentcv==Inf) %>% table()
-
-net_df$sentiment
-
-# MPs
+# B) MP-level Network 
 net_df <- df %>% 
   group_by(name_speaker, name_recipient, doc_id) %>% 
   summarize(sentiment = mean(sentiment_score, na.rm=T),
-            sentimentcv = cv(sentiment_score, na.rm=T),
-            mentions = n()) %>%
+            #sentimentcv = cv(sentiment_score, na.rm=T),
+            mentions = n()) %>% {. ->> temp1} %>% 
   group_by(name_speaker, name_recipient) %>%
-  summarize(mentionssum = sum(mentions),
+  summarize(mentionssum = sum(mentions), # not meaningful at the moment bc mentions are wired due bug mentioned below
             mpties= n(),
             sentimentcv = cv(sentiment, na.rm=T),
             sentiment = mean(sentiment, na.rm=T),
   ) %>%
   mutate(senti2 = sentiment^2) %>% 
   arrange(senti2) # to have the thinnest lines in the foreground
+
+
+### some exploaration...
+net_df$mpties %>% table()
+net_df %>% filter(mpties>400)
+df %>% filter(name_recipient=="Mr. Enda Kenny",
+              member_name=="Mr. Brian Cowen", 
+              ) %>% select(window)
+
+#### BUG ####
+df$text[df$doc_id==tempp$doc_id[tempp$mentions>17]]
+
+# Certainty of relationship [optional]
+net_df %>% 
+  mutate(certaintycv=(1-sentimentcv)*(sentimentcv<1)*(sentimentcv>0),
+         certaitnymentions=marg(mentions),
+         certainty=certaintycv*certaitnymentions) %>% summary
+
 
 # Parties
 netp <- graph_from_data_frame(d=net_df_party, directed=T, vertices=nodes_party)
