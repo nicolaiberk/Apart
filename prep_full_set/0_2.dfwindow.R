@@ -1,29 +1,28 @@
-"
-Construct df window
-"
-
-## setup
+# Title:
+# Context: APART
+# Author: Nicolai B.
+# Date: Fri Nov 15 13:42:14 2019
+# 0. Content ---------------------------------------------------------
+# 1. Preparation
+#
+#
+# 1. Preparation -----------------------------------------------------
+# __Loading Packages -------------------------------------------------
 rm(list=ls())
 setwd("~/GitHub/samunico/Apart/data")
 usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
 pkgs <- c('beepr', 'tidyverse', 'rio', 'tidylog', 'skimr',
           'quanteda', 'readtext', 'Hmisc',
           'googledrive', 'readtext', 'data.table', 'stringr', 'qdap'); for (i in pkgs){usePackage(i)}
-
-
-
-
-# __Loading Data -----------------------------------------------------
-# Download again vs. subsample file already existing?
+# __global vars  -----------------------------------------------------
 # Get Data from: 
 # 1) Website 
 # 2) Drive
 # 3) local
 downl <- 3
-
-# subset (if T: sample 1000 cases)
 subset <- F
 
+# __Loading Data -----------------------------------------------------
 if (downl == 1){
   # These lines downlad the original data from the website; unpack them; and read them into the program
   # Following line not yet working, somehow I can unpack the manually downloaded file, but not the one downloaded via R
@@ -89,11 +88,6 @@ entities <- gsub("(O'.)","\\U\\1",entities,perl=TRUE) # capitalise names startin
 
 ## Creating windows (match of entities)
 kwic <- kwic(tokens, pattern=phrase(entities), window=20, case_insensitive = F)
-
-
-
-# Analyses ----------------------------------------------------------
-
 
 ## Create df_window where 1 row = 1 window preserving original docvars
 df_window <- merge(dfs, kwic, by.x="speechID", by.y="docname") # THIS DOES NOT WORK
