@@ -59,59 +59,82 @@ if (downl){
   export(df, "dail_full.csv")
 } 
 
-dfs <- readtext("dail_full.csv", text_field = "speech")
+df <- fread("dail_full.csv",
+            header=TRUE, showProgress = TRUE, data.table=FALSE, verbose = TRUE, encoding = "UTF-8")
+# Creating a dictionary ---------------------
+temp$member_name %>% word(1) %>% unique() %>% write_clip()
 
 
-##
-## Subsetting
-# Take only the ones of the latest 2 legislative periods
-##
-
-df <- read_csv("df_window_30th_dail.csv")
-
-
-## Get names of MPs in 30th Dail
-names <- tibble(originalname=unique(df$member_name), # original name (not clean)
-                fullname=str_remove_all(as.character(df$member_name %>% unique()), "\\((.*?)\\)") %>% 
-                 str_remove_all(" RIP") %>% 
-                  word(2,-1), # clean full name
-               surname=(str_remove_all(as.character(df$member_name %>% unique()), "\\((.*?)\\)") %>% 
-                        str_remove_all(" RIP") %>% strsplit(split=" ") %>% # clean last name
-                        lapply(function(x) {x[length(x)]}) %>% unlist)) 
+temp <- df %>% select("memberID", "member_name", "legper") %>% distinct() %>% as_tibble()
+temp2 <- temp %>% mutate(
+  originalname = member_name, # original name (not clean)
+  fullname = member_name %>% str_remove_all("Count |Mr. |Dr. |Professor |General |Ms. |Countess |Sir |Capt. |Major |Mrs. |Colonel"), 
+    # str_remove_all(as.character(member_name), "\\((.*?)\\)") %>% 
+    #      str_remove_all(" RIP") %>% 
+    #      word(2,-1), # clean full name
+       surname=(str_remove_all(as.character(member_name), "\\((.*?)\\)") %>%
+                  str_remove_all(" RIP") %>% strsplit(split=" ") %>% # clean last name
+                  lapply(function(x) {x[length(x)]}) %>% unlist)
+       ) 
 
 
-## Get only MPs who share a last name
-repeated_names <- names %>%
-  group_by(surname) %>% 
-  filter(n()>1)
+temp2 <- temp2 %>% group_by(legper, surname) %>% mutate(shared = ifelse(n()>1,1,0)) %>%  
+  ungroup %>% mutate(
+    fullname = fullname %>% str_replace("  ", " "),
+    lengthofname = sapply(strsplit(fullname, " "), length),
+                     match = ifelse(shared==0, paste("Deputy", surname),
+                             ifelse(shared==1 & lengthofname>=2, paste("Deputy", fullname),NA)),
+                     alternativematch = ifelse(shared==0, paste("Deputy", fullname),
+                             ifelse(shared==1 & lengthofname==2,NA,-99))) %>% 
+  arrange(-shared, lengthofname)
 
-## Dummy if MP shares surname
+tibble(x=temp2$fullname[temp2$shared==1 & temp2$lengthofname ==3] %>% strsplit(" ") %>% map(1) %>% unlist(),
+y=temp2$fullname[temp2$shared==1 & temp2$lengthofname ==3] %>% strsplit(" ") %>% map(3) %>% unlist()) %>% mutate(alternativematch = paste(x,y)) %>% select(alternativematch) ->
+  altmat
+temp2$alternativematch[temp2$shared==1 & temp2$lengthofname ==3] <- altmat$alternativematch
 
-names$shared <- 0
-names$shared <- ifelse(names$surname %in% repeated_names$surname, 1, 0)
+temp2 %>% arrange(-shared) %>% View
+temp2$alternativematch %>% is.na %>% table
+
+temp2$fullname %>% str_split(" ")
+
+temp2 %>% View
+
+str_split()
+with(temp2,
+     alternativematch[shared==1 & lengthofname ==3] <-      
+     )
+
+
+
+  # filter(n()>1) %>% arrange(legper,surname) #
+
+
+temp2$match <- NA
+temp2$alternativematch <- NA
+for (i in 1:nrow(temp2)) {
+  if (temp2$shared[i]==0) {
+    temp2$match[i] <- paste("Deputy", temp2$surname[i])
+    temp2$alternativematch[i] <- paste("Deputy", temp2$fullname[i])
+  }
+  else if (temp2$shared[i]==1 & temp2$length[i]==2) {
+    temp2$match[i] <- paste("Deputy", temp2$fullname[i])
+    temp2$alternativematch[i] <- NA
+  }
+  else if (temp2$shared[i]==1 & temp2$length[i]==3) {
+    temp2$match[i] <- paste("Deputy", temp2$fullname[i])
+    temp2$alternativematch[i] <- paste("Deputy", strsplit(temp2$fullname[i]," ")[[1]][1],
+                                       strsplit(temp2$fullname[i]," ")[[1]][3], sep=" ")
+  }
+  
+  
 
 ###### Creating dictionary #######
-
 names$match <- NA
 names$alternativematch <- NA
-names$length <- sapply(strsplit(names$fullname, " "), length)
 
 
-for (i in 1:nrow(names)) {
-  if (names$shared[i]==0) {
-    names$match[i] <- paste("Deputy", names$surname[i])
-    names$alternativematch[i] <- paste("Deputy", names$fullname[i])
-  }
-  else if (names$shared[i]==1 & names$length[i]==2) {
-    names$match[i] <- paste("Deputy", names$fullname[i])
-    names$alternativematch[i] <- NA
-  }
-  else if (names$shared[i]==1 & names$length[i]==3) {
-    names$match[i] <- paste("Deputy", names$fullname[i])
-    names$alternativematch[i] <- paste("Deputy", strsplit(names$fullname[i]," ")[[1]][1],
-                                       strsplit(names$fullname[i]," ")[[1]][3], sep=" ")
-  }
-}
+
 
 
 names[170:178,'match'] <-  unique(df$party_name) # add party names to column of matches
