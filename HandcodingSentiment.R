@@ -27,10 +27,10 @@ if (subsample != 'full'){
 df$handcoding <- NA
 
 for (i in (1:nrow(df))){
-  cat("Window:\n")
-  cat(df$window[i])
+  cat("Window:\n\n")
+  cat(paste(df$window[i], "\n\n"))
   cat("Speech:\n")
-  cat(df$speech[i])
+  cat(paste(df$speech[i], "\n\n"))
   cat("IS THE SENTIMENT IN THIS TEXT NEGATIVE [1], NEUTRAL [2], OR POSITIVE [3]?")
   value <- readline(prompt = "Value: ")
   if(value == "quit"){break}else{(df$handcoding[i] <- as.numeric(value)-2)}
