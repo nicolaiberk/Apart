@@ -16,7 +16,7 @@ for (i in c('beepr', 'tidyverse', 'rio', 'tidylog', 'skimr', 'clipr',
 # __Loading Data -----------------------------------------------------
 
 # Get a date overview of Dáils:
-daildict <- import("Original Data Files/DailPeriods.csv")
+daildict <- import("DailPeriods.csv")
 daildict <- daildict %>% mutate(
   begin = begin %>% as.Date("%d/%m/%Y"),
   end = end %>% as.Date("%d/%m/%Y")
