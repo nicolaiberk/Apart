@@ -13,10 +13,7 @@
 # 1. Preparation -------------------------------------------------------
 # __Loading Packages ---------------------------------------------------
 usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
-for (i in c('beepr', 'tidyverse', 'rio', 'tidylog', 'clipr',
-            'quanteda', 'readtext', 'Hmisc', 'rio',
-            'googledrive', 'readtext', 'data.table', 'stringr', 'qdap')){
-  usePackage(i)}
+for (i in c('beepr', 'tidyverse', 'tidylog', 'clipr', 'googledrive', 'stringr', 'rio', 'data.table')){usePackage(i)}
 # detach("package:skimr", unload=TRUE)
 
 
@@ -24,7 +21,7 @@ for (i in c('beepr', 'tidyverse', 'rio', 'tidylog', 'clipr',
 # 1) original dataset fromat Harvard dataverse
 # If you want to start from the original Harvard Dataverse dataset you'll have to download it manually first & paste it into the current file directory: https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/6MZN76/CRUNF0
 
-DATASRC <-  2 # set to x to start from: 
+DATASRC <-  3 # set to x to start from: 
               #   1) [NOT WORKING] Harvard Dataverse compressed file ("Dail_debates_1919-2013.tar.gz")
               #   2) Google Drive compressed file
               #   3) Ready-made local dataset
@@ -33,11 +30,12 @@ PLOT <- F     # Plot distribution of speeches across legislative periods
 
 # __Loading Data -----------------------------------------------------
 ## 1. Data frame of Dáil Periods & speakers
-daildict <- import("DailPeriods.csv")
+daildict <- read.csv("DailPeriods.csv", encoding = "UTF-8")
 daildict <- daildict %>% mutate(
   begin = begin %>% as.Date("%d/%m/%Y"),
   end = end %>% as.Date("%d/%m/%Y")
 )
+write.csv(daildict, fileEncoding = "UTF-8")
 
 ## 2.Universe of speeches
 if (DATASRC<3) {
@@ -80,8 +78,9 @@ if (DATASRC<3) {
   export(df, "dail_full.csv")
   
 } #else if (DATASRC==3) {
-  df <- fread("dail_full.csv",
-              header=TRUE, showProgress = TRUE, data.table=FALSE, verbose = TRUE, encoding = "UTF-8")
+  
+
+df <- read.csv("dail_full.csv", encoding = "UTF-8")
   # }
 
 # Creating an entity dictionary ---------------------
@@ -116,11 +115,14 @@ temp2 <- temp2 %>% group_by(legper, surname) %>% mutate(shared = ifelse(n()>1,1,
   ungroup %>% mutate(
     fullname = fullname %>% str_replace("  ", " "),
     lengthofname = sapply(strsplit(fullname, " "), length),
-                     match = ifelse(shared==0, paste("Deputy", surname),
-                             ifelse(shared==1 & lengthofname>=2, paste("Deputy", fullname),NA)),
-                     alternativematch = ifelse(shared==0, paste("Deputy", fullname),
-                             ifelse(shared==1 & lengthofname==2,NA,-99))) %>% 
+    match = ifelse(shared==0, paste("Deputy", surname),
+                   ifelse(shared==1 & lengthofname>=2, paste("Deputy", fullname),NA)),
+    alternativematch = ifelse(shared==0, paste("Deputy", fullname),
+                              ifelse(shared==1 & lengthofname==2,NA,-99)),
+    nicknamematch = ifelse(!is.na(nickname),paste("Deputy", nickname, surname),NA)) %>% 
   arrange(-shared, lengthofname)
+
+temp2$nicknamematch %>% unique()
 
 tibble(x=temp2$fullname[temp2$shared==1 & temp2$lengthofname ==3] %>% strsplit(" ") %>% map(1) %>% unlist(),
 y=temp2$fullname[temp2$shared==1 & temp2$lengthofname ==3] %>% strsplit(" ") %>% map(3) %>% unlist()) %>% mutate(alternativematch = paste(x,y)) %>% select(alternativematch) ->
