@@ -2,9 +2,12 @@
 # Context: APART
 # Author: Philipp M.
 # Date: Fri Nov 15 12:46:26 2019
+# DESCRIPTION: This code 
 # 0. Content ------------------------------------------------------------
 #   1. Preparation
 #   2. Creating Entity Dictionary
+#   
+#   
 #   
 #   
 # 1. Preparation -------------------------------------------------------
@@ -25,7 +28,6 @@ DATASRC <-  2 # set to x to start from:
               #   1) [NOT WORKING] Harvard Dataverse compressed file ("Dail_debates_1919-2013.tar.gz")
               #   2) Google Drive compressed file
               #   3) Ready-made local dataset
-UPLOAD <-  T  # Upload Entity dictionary to drive?
 PLOT <- F     # Plot distribution of speeches across legislative periods
 
 
@@ -77,11 +79,10 @@ if (DATASRC<3) {
   # Save file locally
   export(df, "dail_full.csv")
   
-# } else if (DATASRC==3) {
+} #else if (DATASRC==3) {
   df <- fread("dail_full.csv",
               header=TRUE, showProgress = TRUE, data.table=FALSE, verbose = TRUE, encoding = "UTF-8")
   # }
-
 
 # Creating an entity dictionary ---------------------
 # Subselect relevant columns
@@ -96,9 +97,7 @@ nick <- str_extract(temp$member_name, "\\((.*?)\\)") %>%
 nonick <- c("(Snr.)", "(Deceased)", "(Major-General)", "(Jnr.)", "(Limerick West)", "(Senior)", "(The Cope)", "(Captain)", "(Dr.)", "(Major)", "(Dublin South-Central)", "(Longford-Roscommon)", "(Tipperary)", "(Cork City)", "(Resigned)", "(Wexford)", "(Tipperary South)", "(Cork Borough)", "(Cork West)", "(deceased)", "(Dublin West)", "(Edenderry, Offaly)", "(Mayo North)", "(Snr)", NA)
 
 # nonick %>% 
-
-# # # add parties
-# # # add nicknames
+temp$party_name %>% unique()
 
 # Create cleaned names & surname columns
 temp2 <- temp %>% mutate(
@@ -110,13 +109,8 @@ temp2 <- temp %>% mutate(
     # word(2,-1), # clean full name
   surname = (str_remove_all(member_name, "\\((.*?)\\)") %>%
                str_remove_all(" RIP") %>% strsplit(split=" ") %>% # clean last name
-               lapply(function(x) {x[length(x)]}) %>% unlist)
+               lapply(function(x) {x[length(x)]}) %>% unlist),
        )
-
-
-temp2$fullname %>% unique()
-temp2$nickname %>% unique()
-
 
 temp2 <- temp2 %>% group_by(legper, surname) %>% mutate(shared = ifelse(n()>1,1,0)) %>%  
   ungroup %>% mutate(
@@ -132,6 +126,14 @@ tibble(x=temp2$fullname[temp2$shared==1 & temp2$lengthofname ==3] %>% strsplit("
 y=temp2$fullname[temp2$shared==1 & temp2$lengthofname ==3] %>% strsplit(" ") %>% map(3) %>% unlist()) %>% mutate(alternativematch = paste(x,y)) %>% select(alternativematch) ->
   altmat
 temp2$alternativematch[temp2$shared==1 & temp2$lengthofname ==3] <- altmat$alternativematch
+
+
+# Save file
+write.csv(temp2 %>% select(-memberID, -member_name), "EntitiesDict.csv", fileEncoding = "UTF-8")
+
+
+
+
 
 temp2 %>% arrange(-shared) %>% View
 temp2$alternativematch %>% is.na %>% table
