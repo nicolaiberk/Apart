@@ -3,11 +3,11 @@ library("sentimentSetsR")
 
 rm(list=ls())
 setwd("~/GitHub/samunico/Apart/data")
-df_window <- read.csv("df_window.csv")
+df_window <- read.csv("df_window_30th_dail.csv")
 
 ## Sentiment analysis of windows
 corpus_window<- corpus(df_window, text_field = 'window') #first transform df to corpus
-vader <- getVaderRuleBasedSentiment(df_window$x, compound=TRUE)
+vader <- getVaderRuleBasedSentiment(df_window$window, compound=TRUE)
 sentanalysis <- dfm(corpus_window, dictionary=data_dictionary_LSD2015[1:2]) #sentiment analysis
 df_window <- cbind(df_window, convert(sentanalysis_30th_dail, to="data.frame")) # add sentiment analysis to df_window
 
