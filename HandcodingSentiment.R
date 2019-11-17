@@ -33,6 +33,7 @@ for (i in (1:nrow(df))){
   cat("IS THE SENTIMENT TOWARDS THE MATCH IN THIS TEXT NEGATIVE [1], NEUTRAL [2], OR POSITIVE [3]?")
   value <- readline(prompt = "Value: ")
   if(value == "quit"){break}else{(df$handcoding[i] <- as.numeric(value)-2)}
+  cat(paste("Party:", df$party_name[i], "\n\n\n\n"))
 }
 
 write.csv(df, file = "nico_sample_coded.csv", fileEncoding = "UTF-8")
