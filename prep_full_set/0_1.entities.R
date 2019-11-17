@@ -72,10 +72,11 @@ if (DATASRC<3) {
       }
     
     # Plotting the number of speeches against the legislative period
-    if (PLOT) {df %>% ggplot(.,aes(x=legper)) + 
+    if (PLOT) {zz <- df %>% ggplot(.,aes(x=legper)) + 
       geom_histogram(bins = max(df$legper,na.rm=T)) + 
-      scale_x_continuous(breaks = 1:max(daildict$dail))}
-
+      scale_x_continuous(breaks = 1:max(df$legper))}
+  
+    
   # Save file locally
   fwrite(df, "dail_full.csv", verbose = T)
 }
