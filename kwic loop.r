@@ -15,20 +15,35 @@ usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.
 for (i in c('beepr', 'tidyverse', 'rio', 'tidylog', 'clipr', 'quanteda', 'data.table', 'rlist', 'foreach', 'doParallel', 'sentimentr')){
   usePackage(i)}
 
-## for the whole analysis just few packages
-usePackage('quanteda')
-usePackage('dplyr')
-usePackage('doParallel')
 
 # __Loading Data -----------------------------------------------------
-df <- data.table::fread("dail_full.csv", encoding = "UTF-8", verbose = T)
+dfo <- data.table::fread("dail_full.csv", encoding = "UTF-8", verbose = T); beep(10)
 entities <- data.table::fread("EntitiesDict.csv", encoding = "UTF-8", verbose = T)
 
-# KWIC --------------------------------------
-# Create Subset for testing
-df_sub <- df %>% group_by(legper) %>% 
-  mutate(take = sample(c(T,F), replace=TRUE, size=n(), prob = c((p=0.01), 1-p))) %>% # (40/n())
-  ungroup() %>% filter(take) %>% as.tibble() 
+
+# __Global Variables -----------------------------------------------------
+SUBS <- F # Subset or Full
+P <- 0.01 #change either n or proportion in decimals, e.g. 0.01
+
+
+# __Defining Analysis set -----------------------------------------------------
+if(SUBS){
+  if(P>1){df <- dfo %>% sample_n(P) %>% as.tibble()
+  } else {df <- dfo %>% sample_frac(P) %>% as.tibble()}
+} else {df <- dfo}
+
+
+# 2. Data cleaning -----------------------------------------------------
+# kick out (Interruption[s])
+temp <- df$speech %>% str_extract("\\(.*\\)"); beep(10)
+tempp <- temp[!is.na(temp)]; beep(10)
+unique(tempp)
+temp2 <- temp %>% unique
+tempp <- tempp %>% table(); beep(10)
+tempp %>% sort(decreasing = T)
+# str_remove_all("\\((.*?)\\)")
+# str_remove_all("Count |Mr. |Dr. |Professor |General |Ms. |Countess |Sir |Capt. |Major |Mrs. |Colonel | RIP")
+
 
 # setup parallel backend to use many processors
 cores <- detectCores()
@@ -41,18 +56,19 @@ start <- Sys.time()
 df_windows <- foreach (i=2:max(df$legper), # 
                        .combine = "rbind",
                        .packages=c('tidyverse', 'quanteda')) %dopar% {
-  dfs <- df %>% filter(legper==i) %>% mutate(speechID = speechID %>% as.character)
-  entity <- entities %>% filter(legper==i)
-  entits <- c(entity$match, entity$alternativematch, entity$fullname, entity$party_name) %>% unique
-  entits <- entits[!entits == ""]
-  dfs %>% corpus(text_field = 'speech', docid_field = 'speechID') %>% 
-    tokens(remove_punct = T) %>% 
-    kwic(pattern=phrase(entits), window=20, case_insensitive = F) %>% 
-    merge(dfs,., by.x = "speechID", by.y="docname")
-}; print(Sys.time()-start); stopCluster(cl)
+                         dfs <- df %>% filter(legper==i) %>% mutate(speechID = speechID %>% as.character)
+                         entity <- entities %>% filter(legper==i)
+                         #entity$nicknamematch
+                         entits <- c(entity$match, entity$alternativematch, entity$party_name) %>% unique
+                         entits <- entits[!entits == ""]
+                         dfs %>% corpus(text_field = 'speech', docid_field = 'speechID') %>% 
+                           tokens(remove_punct = T) %>% 
+                           kwic(pattern=phrase(entits), window=20, case_insensitive = F) %>% 
+                           merge(dfs,., by.x = "speechID", by.y="docname")
+                       }; print(Sys.time()-start); stopCluster(cl)
 
-  
-  
+
+
 # Creating unique Window ID
 df_window <- df_windows %>% group_by(speechID) %>% mutate(row = row_number()) %>% ungroup() %>% mutate(window_id = paste(speechID, row, sep="_")) %>% select(-row)
 
