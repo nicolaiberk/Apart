@@ -28,7 +28,7 @@ df$handcoding <- NA
 df$procedural <- NA
 i <- 1
 while(i <= nrow(df)) {
-# for (i in (j:nrow(df))){
+  # for (i in (j:nrow(df))){
   cat(paste0(c("|", rep("=",((z <- i/nrow(df))*80) %>% round(0)), ">",rep(" ",(80-z*80)), "|", z*100, "% \n")), sep="", collapse="")
   cat(paste("Party:", df$party_name[i], "\n\n"))
   cat(paste("Match:", df$keyword[i], "\n\n"))
@@ -39,17 +39,17 @@ while(i <= nrow(df)) {
   cat("IS THE SENTIMENT TOWARDS THE MATCH IN THIS TEXT NEGATIVE [1], NEUTRAL [2], OR POSITIVE [3]? \n")
   value <- readline(prompt = "Value: ")
   if(value %in% c("quit", "q")) {break #; j <- i
-    } else if (value %in% c("back", "b")) {i <- i-1; next
-    } else if (is.numeric(value)) {(df$handcoding[i] <- as.numeric(value)-2)
-    } else {cat("No valid input"); next}
+  } else if (value %in% c("back", "b")) {i <- i-1; next
+  } else if (is.numeric(value)) {(df$handcoding[i] <- as.numeric(value)-2)
+  } else {cat("No valid input"); next}
   
   # Procedural Check
   cat("IS THE WINDOW PROCEDURAL [1], OR NOT [2]? \n")
   value2 <- readline(prompt = "Value: ")
   if(value2 %in% c("quit", "q")){break #; j <- i
-    } else if(is.numeric(value2)) {df$procedural[i] <- 2-as.numeric(value2)
-    } else if(value2 %in% c("back", "b")) {i <- i-1; next
-    } else {cat("No valid input"); next} #i <- i-1;
+  } else if(is.numeric(value2)) {df$procedural[i] <- 2-as.numeric(value2)
+  } else if(value2 %in% c("back", "b")) {i <- i-1; next
+  } else {cat("No valid input"); next} #i <- i-1;
   i <- i + 1
 }
 
