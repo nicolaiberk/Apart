@@ -72,10 +72,11 @@ if (DATASRC<3) {
       }
     
     # Plotting the number of speeches against the legislative period
-    if (PLOT) {df %>% ggplot(.,aes(x=legper)) + 
+    if (PLOT) {zz <- df %>% ggplot(.,aes(x=legper)) + 
       geom_histogram(bins = max(df$legper,na.rm=T)) + 
-      scale_x_continuous(breaks = 1:max(daildict$dail))}
-
+      scale_x_continuous(breaks = 1:max(df$legper))}
+  
+    
   # Save file locally
   fwrite(df, "dail_full.csv", verbose = T)
 }
@@ -89,10 +90,11 @@ temp <- df %>% select("memberID", "member_name", "legper", "party_name") %>% dis
 # find formal prefixes of names:
 # temp$member_name %>% word(1) %>% table() %>% sort(decreasing = T)
 
-# check which nicknames are actually Nicknames
-nick <- str_extract(temp$member_name, "\\((.*?)\\)") %>% 
-  table() %>% sort(decreasing = T) %>% names()
-nonick <- c("(Snr.)", "(Deceased)", "(Major-General)", "(Jnr.)", "(Limerick West)", "(Senior)", "(The Cope)", "(Captain)", "(Dr.)", "(Major)", "(Dublin South-Central)", "(Longford-Roscommon)", "(Tipperary)", "(Cork City)", "(Resigned)", "(Wexford)", "(Tipperary South)", "(Cork Borough)", "(Cork West)", "(deceased)", "(Dublin West)", "(Edenderry, Offaly)", "(Mayo North)", "(Snr)", NA)
+## NICKNAME MATCHES
+# # check which nicknames are actually Nicknames
+# nick <- str_extract(temp$member_name, "\\((.*?)\\)") %>% 
+#   table() %>% sort(decreasing = T) %>% names()
+# nonick <- c("(Snr.)", "(Deceased)", "(Major-General)", "(Jnr.)", "(Limerick West)", "(Senior)", "(The Cope)", "(Captain)", "(Dr.)", "(Major)", "(Dublin South-Central)", "(Longford-Roscommon)", "(Tipperary)", "(Cork City)", "(Resigned)", "(Wexford)", "(Tipperary South)", "(Cork Borough)", "(Cork West)", "(deceased)", "(Dublin West)", "(Edenderry, Offaly)", "(Mayo North)", "(Snr)", NA)
 
 # Creating Clean Member Names & Patterns, etc.
 # Create cleaned names & surname columns
@@ -100,7 +102,7 @@ temp2 <- temp %>% mutate(
   originalname = member_name, # original name (not clean)
   fullname = member_name %>% 
     str_remove_all("Count |Mr. |Dr. |Professor |General |Ms. |Countess |Sir |Capt. |Major |Mrs. |Colonel | RIP"),
-  nickname = ifelse(!str_extract(fullname, "\\((.*?)\\)") %in% nonick, (str_extract(fullname, "\\((.*?)\\)") %>% str_remove_all("\\(|\\)")), NA),
+  # nickname = ifelse(!str_extract(fullname, "\\((.*?)\\)") %in% nonick, (str_extract(fullname, "\\((.*?)\\)") %>% str_remove_all("\\(|\\)")), NA),
   fullname = fullname %>% str_remove_all("\\((.*?)\\)"),
     # word(2,-1), # clean full name
   surname = (str_remove_all(member_name, "\\((.*?)\\)") %>%
@@ -116,7 +118,8 @@ temp2 <- temp2 %>% group_by(legper, surname) %>% mutate(shared = ifelse(n()>1,1,
                    ifelse(shared==1 & lengthofname>=2, paste("Deputy", fullname),NA)),
     alternativematch = ifelse(shared==0, paste("Deputy", fullname),
                               ifelse(shared==1 & lengthofname==2,NA,-99)),
-    nicknamematch = ifelse(!is.na(nickname),paste("Deputy", nickname, surname),NA)) %>% 
+    # nicknamematch = ifelse(!is.na(nickname),paste("Deputy", nickname, surname),NA)
+    ) %>% 
   arrange(-shared, lengthofname)
 
 tibble(x=temp2$fullname[temp2$shared==1 & temp2$lengthofname ==3] %>% strsplit(" ") %>% map(1) %>% unlist(),
