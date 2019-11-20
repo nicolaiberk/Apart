@@ -25,8 +25,10 @@ if (subsample != 'full'){
 }
 
 df$handcoding <- NA
+df$procedural <- NA
 
 for (i in (1:nrow(df))){
+  cat(paste(i, "\n\n"))
   cat(paste("Match:", df$keyword[i], "\n\n"))
   cat("Window:\n\n")
   cat(paste(df$window[i], "\n\n"))
@@ -35,7 +37,7 @@ for (i in (1:nrow(df))){
   if(value1 == "quit"){break}else{(df$handcoding[i] <- as.numeric(value1)-2)}
   cat("IS THIS A PROCEDURAL STATEMENT (y[1]/n[2])?")
   value2 <- readline(prompt = "Value: ")
-  if(value2 == "quit"){break}else{(df$handcoding[i] <- as.numeric(if(value2==1){1}else{0}))}
+  if(value2 == "quit"){break}else{(df$procedural[i] <- as.numeric(if(value2==1){1}else{0}))}
   cat(paste("Party:", df$party_name[i], "\n\n\n\n"))
 }
 
