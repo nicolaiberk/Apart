@@ -23,7 +23,7 @@ entities <- data.table::fread("EntitiesDict.csv", encoding = "UTF-8", verbose = 
 
 # __Global Variables -----------------------------------------------------
 SUBS <- F # Subset or Full
-P <- 0.01 #change either n or proportion in decimals, e.g. 0.01
+P <- 0.01 # change either n or proportion in decimals, e.g. 0.01
 
 
 # __Defining Analysis set -----------------------------------------------------
@@ -58,8 +58,8 @@ df_windows <- foreach (i=2:max(df$legper), #
                        .packages=c('tidyverse', 'quanteda')) %dopar% {
                          dfs <- df %>% filter(legper==i) %>% mutate(speechID = speechID %>% as.character)
                          entity <- entities %>% filter(legper==i)
-                         #entity$nicknamematch
-                         entits <- c(entity$match, entity$alternativematch, entity$party_name) %>% unique
+                         #entity$match, entity$alternativematch, entity$party_name
+                         entits <- c(entity$nicknamematch) %>% unique
                          entits <- entits[!entits == ""]
                          dfs %>% corpus(text_field = 'speech', docid_field = 'speechID') %>% 
                            tokens(remove_punct = T) %>% 
