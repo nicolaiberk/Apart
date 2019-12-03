@@ -10,13 +10,13 @@
 #
 # 1. Preparation --------------------------------------------------------
 # __Loading Packages -------------------------------------------------
+rm(list=ls())
 usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
 for (i in c('beepr', 'tidyverse', 'rio', 'tidylog', 'clipr', 'quanteda', 'data.table', 'rlist', 
             'parallel', 'doSNOW', 'foreach', 'sentimentr', 'progress')){
   usePackage(i)}
 
 # __Loading Data -----------------------------------------------------
-rm(list=ls())
 dfo <- data.table::fread("dail_full.csv", encoding = "UTF-8", verbose = T); beep(10)
 entities <- data.table::fread("EntitiesDict.csv", encoding = "UTF-8", verbose = T)
 
@@ -99,7 +99,6 @@ df_windows <- merge(df, df_windows, by.x = "speechID", by.y="docname")
 # backup <- df_windows
 
 
-
 # #####
 # tempppp <- .Last.value
 # tempppp <- tempppp %>% mutate(window=paste(pre, pattern, post))
@@ -108,6 +107,7 @@ df_windows <- merge(df, df_windows, by.x = "speechID", by.y="docname")
 
 # Creating unique Window ID
 df_window <- df_windows %>% group_by(speechID) %>% mutate(row = row_number()) %>% ungroup() %>% mutate(window_id = paste(speechID, row, sep="_")) %>% select(-row)
+
 
 # Saving Data -------------------------------
 data.table::fwrite(df_window,"df_windows_full_12-03.csv")
@@ -125,44 +125,44 @@ df_window %>% ggplot(.,aes(x=legper)) +
 
 # -----
 df_window_sub <- df_window %>%  sample_n(1000)
-
 # Windows for Sentiment Analysis
 
 print("Preparation for Sentiment Analyses"); start <- Sys.time()
-df_window$window <- paste(df_window$pre, df_window$keyword, df_window$post, sep=" ")
-df_window$window_noname <- paste(df_window$pre, df_window$post, sep=" ")
-corpus_window <- corpus(df_window, text_field = 'window_noname')
+df_window_13_sub$window <- paste(df_window_13_sub$pre, df_window_13_sub$keyword, df_window_13_sub$post, sep=" ")
+df_window_13_sub$window_noname <- paste(df_window_13_sub$pre, df_window_13_sub$post, sep=" ")
+corpus_window <- corpus(df_window_13_sub, text_field = 'window_noname')
 Sys.time()-start
 
 # Sentiment Analyses ------------------------
 # 1. LSD Lexicoder Sentiment Dictionary
 print("1. Lexicoder Sentiment Analysis"); start <- Sys.time()
 sent_analysis <- dfm(corpus_window, dictionary=data_dictionary_LSD2015[1:4]) 
-df_window <- cbind(df_window, quanteda::convert(sent_analysis, to="data.frame"))
-df_window$ntoken_window <- ntoken(df_window$window_noname) 
-df_window$original_lsd <- (df_window$positive - df_window$negative)/df_window$ntoken_window
-df_window$unweighted_lsd <- (df_window$positive - df_window$negative)
-df_window$original_log <- log((df_window$positive + 0.5)/(df_window$negative + 0.5))
-df_window$weighted_log <- (log((df_window$positive + 0.5)/(df_window$negative + 0.5)))/df_window$ntoken_window
+df_window_13_sub <- cbind(df_window_13_sub, quanteda::convert(sent_analysis, to="data.frame"))
+df_window_13_sub$ntoken_window <- ntoken(df_window_13_sub$window_noname) 
+df_window_13_sub$weighted_lsd <- (df_window_13_sub$positive - df_window_13_sub$negative)/df_window_13_sub$ntoken_window
+df_window_13_sub$unweighted_lsd <- (df_window_13_sub$positive - df_window_13_sub$negative)
+df_window_13_sub$unweighted_log <- log((df_window_13_sub$positive + 0.5)/(df_window_13_sub$negative + 0.5))
+df_window_13_sub$weighted_log <- (log((df_window_13_sub$positive + 0.5)/(df_window_13_sub$negative + 0.5)))/df_window_13_sub$ntoken_window
 Sys.time()-start
 
 # 2. sentimentr
 print("2. SentimentR Sentiment Analysis"); start <- Sys.time()
-sentences_sentr <- get_sentences(df_window$window_noname)
+sentences_sentr <- get_sentences(df_window_13_sub$window_noname)
 sent_r <- sentiment(sentences_sentr)
-df_window$unweighted_sentr <- sent_r$sentiment
-df_window$weighted_sentr <- sent_r$sentiment/df_window$ntoken_window
+df_window_13_sub$unweighted_sentr <- sent_r$sentiment
+df_window_13_sub$weighted_sentr <- sent_r$sentiment/df_window_13_sub$ntoken_window
 Sys.time()-start
 
 # ranks
-df_window <- df_window %>% 
+df_window_13_sub <- df_window_13_sub %>% ungroup %>% 
   mutate(
-    percentrank_original_lsd = percent_rank(original_lsd),
+    percentrank_weighted_lsd = percent_rank(weighted_lsd),
     percentrank_unweighted_lsd = percent_rank(unweighted_lsd),
-    percentrank_original_log = percent_rank(original_log),
+    percentrank_unweighted_log = percent_rank(unweighted_log),
     percentrank_weighted_log = percent_rank(weighted_log),
     percentrank_unweighted_sentr = percent_rank(unweighted_sentr),
     percentrank_weighted_sentr = percent_rank(weighted_sentr))
+fwrite(df_window_13_sub, "window_sub.csv")
 
 
 ## Trashfile
