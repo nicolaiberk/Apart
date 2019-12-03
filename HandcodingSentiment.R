@@ -26,9 +26,9 @@ if (subsample != 'full'){
 
 df$handcoding <- NA
 df$procedural <- NA
+
 i <- 1
 while(i <= nrow(df)) {
-  # for (i in (j:nrow(df))){
   cat(paste0(c("|", rep("=",((z <- i/nrow(df))*80) %>% round(0)), ">",rep(" ",(80-z*80)), "|", z*100, "% \n")), sep="", collapse="")
   cat(paste("Party:", df$party_name[i], "\n\n"))
   cat(paste("Match:", df$keyword[i], "\n\n"))
