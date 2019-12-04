@@ -1,3 +1,12 @@
+######
+
+# CURRENT WORKING SITE:
+# Work on finding correct speker names (see header 'find speakers ....')
+
+######
+
+
+
 # Title: Post-window creation cleaning
 # Context: APART
 # Author: Nicolai Berk
@@ -9,7 +18,7 @@
 # __Loading Packages -------------------------------------------------
 rm(list=ls())
 usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.packages(p,dep = TRUE, repos = "http://cran.wu.ac.at"); library(p, character.only = TRUE)}
-for (i in c('data.table', 'dplyr', 'purrr', 'googledrive', 'quanteda', 'compiler')){usePackage(i)}; rm(i, usePackage)
+for (i in c('data.table', 'dplyr', 'purrr', 'googledrive', 'quanteda', 'compiler', 'stringr')){usePackage(i)}; rm(i, usePackage)
 
 # 2. identify mentions through speaker
 # __global vars  -----------------------------------------------------
@@ -42,6 +51,35 @@ df_window$datef <- as.Date(df_window$date, format = "%Y-%m-%d")
 speakers$begin <- as.Date(speakers$begin, format = "%d/%m/%Y")
 speakers$end <- as.Date(speakers$end, format = "%d/%m/%Y")
 
+
+
+# find speakers with differing names in the df -----
+# some speaker names are listed differently in the dail periods and in the speaker list
+entities <- fread("EntitiesDict.csv")
+sp <- c("Count Plunkett", "Seán Lemass", "Pádraig Faulkner", "John O'Connell", "Tom Fitzpatrick", "Seán Barrett") 
+sp <- sp %>% word(2)
+et <- entities %>% select(originalname, fullname) %>% distinct
+
+et[grepl(sp[1], et$originalname),] 
+df_window[grepl(sp[1], df_window$member_name),] 
+
+et[grepl(sp[2], et$originalname),] 
+df_window[grepl(sp[2], df_window$speaker),] 
+
+et[grepl(sp[3], et$originalname),] 
+df_window[grepl(sp[3], df_window$speaker),] 
+
+et[grepl(sp[4], et$originalname),] 
+df_window[grepl(sp[4], df_window$speaker),] 
+
+et[grepl(sp[5], et$originalname),] 
+df_window[grepl(sp[5], df_window$speaker),] 
+
+et[grepl(sp[6], et$originalname),] 
+df_window[grepl(sp[6], df_window$speaker),]
+
+
+
 # dummy variable for speakers
 df_window$speaker <- 0
 sum(df_window$speaker)
@@ -67,15 +105,19 @@ for (i in (1:nrow(speakers))){
 
 # 3. get rid of common reference terms  -------------------------
 
-# see most common pre-match terms
+# define pre-match terms
 df_window$shortpre <- df_window$pre %>%
   lapply(., strsplit, split = " ") %>%
-  lapply(., tail, n = 5)
+  lapply(., unlist) %>% 
+  lapply(., tail, n = 5) %>%
+  lapply(., paste, collapse = " ") %>% 
+  unlist #%>% 
+  # as.factor()
 
-start <- as.Date(Sys.time())
-table(df_window$shortpre)[order(table(df_window$shortpre))][1:5]
-end <- as.Date(Sys.time())
-print(paste("Total runtime: ", str((end-start))))
-library(beepr)
-beep(1)
+# get rid of missings
+df_window$shortpre[df_window$shortpre == ""] <- NA
 
+# inspect most common pre-matches (this might take a bit)
+sort(table(df_window$shortpre), decreasing = T)[1:100]
+
+# might exclude 'I call', 'I am calling', however very minor problem (~0.2 to ~0.3% of windows)
