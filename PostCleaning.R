@@ -1,7 +1,7 @@
 ######
 
 # CURRENT WORKING SITE:
-# Work on finding correct speker names (see header 'find speakers ....')
+# Work on finding correct speaker names (see header 'find speakers ....')
 
 ######
 

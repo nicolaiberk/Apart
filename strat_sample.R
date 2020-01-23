@@ -13,11 +13,10 @@ usePackage <- function(p) {if (!is.element(p, installed.packages()[,1]))install.
 for (i in c('dplyr', 'beepr')){usePackage(i)}; rm(i, usePackage)
 
 # __global vars  -----------------------------------------------------
-load <- T # should dataset be downloaded?
 prop <-  0.01 # proportion of original data to be sampled
 
 # __Loading Data -----------------------------------------------------
-df <- data.table::fread("df_windows_full_12-03.csv", encoding = "UTF-8", verbose = T); beep(10)
+df <- data.table::fread("windows_df_230120.csv", encoding = "UTF-8", verbose = T); beep(10)
 
 
 # 2. Sampling --------------------------------------------------------
@@ -26,14 +25,11 @@ sample <- df %>%
   group_by(legper) %>% 
   sample_frac(prop)
 
-# generate single string
-sample$text <- paste(sample$pre, sample$keyword, sample$post)
-
 # 3. write to csv
 
 # general sample
-data.table::fwrite(sample,"StratSample_01-15.csv"); beep(10)
+data.table::fwrite(sample,"StratSample_01-23.csv"); beep(10)
 
 # figure eight sample
-f8_sample <- as.data.frame(sample)[, c('window_id', 'text', 'keyword')]
-data.table::fwrite(f8_sample,"f8Val_StratSample_01-15.csv"); beep(10)
+f8_sample <- as.data.frame(sample)[, c('window_id', 'window', 'keyword')]
+data.table::fwrite(f8_sample,"f8Val_StratSample_01-23.csv"); beep(10)
