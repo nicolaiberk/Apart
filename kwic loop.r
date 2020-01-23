@@ -22,10 +22,10 @@ entities <- data.table::fread("EntitiesDict.csv", encoding = "UTF-8", verbose = 
 
 # ---------------------------------------- 2. KWIC --------------------------------------
 # __Global Variables -----------------------------------------------------
-SUBS <- T # Subset or Full
+SUBS <- F # Subset or Full
     P <- 1 # change either n or proportion in decimals, e.g. 0.01
     LP <- 13 # start of data frame in terms of legislative periods / Dails
-W <-  50 # Windowsize
+W <-  70 # Windowsize
 # Upload to drive?
 drive <- F
 
@@ -39,10 +39,12 @@ df$legper %>% table(useNA = "always") # double check
 
 # __Data cleaning -----------------------------------------------------
 # remove everything with parenthesis:
-system.time(df$speech <- df$speech %>% stringr::str_remove_all("\\([^\\(\\)]*\\)")); beep(10)
+system.time(df$speech <- df$speech %>% 
+              stringr::str_remove_all("\\([^\\(\\)]*\\)") %>% 
+              stringr::str_remove_all("\\[[^\\(\\)]*\\]")); beep(10)
 
 # __Setup Parallel Processing -----------------------------------------------------
-## Slice task for foreach looping: # has to happen within each thingy.
+## Slice task for foreach looping: # has to happen within each thingy (legper?).
 x <- 3000 # size of slice
 lp <- df$legper %>% unique %>% sort()
 for (i in lp){
@@ -71,7 +73,7 @@ for (i in lp){
 # __Actual Loop -----------------------------------------------------
 # Ready, Set, Go!!!
 # setup parallel backend to use many processors
-numCores<-detectCores(); cl <- makeCluster(numCores);registerDoSNOW(cl)
+numCores<-detectCores(); cl <- makeCluster(numCores-1);registerDoSNOW(cl)
 start <- Sys.time()
 
 # Actual loop
@@ -83,19 +85,26 @@ df_windows <- foreach (i = 1:iterations,
                        ) %dopar% {
                          dfs <- df %>% filter(randomslice==i) %>% mutate(speechID = speechID %>% as.character)
                          currentdail <- dfs$legper %>% unique 
-                         entity <- entities %>% filter(legper==currentdail)
                          # Searchterms
-                         entits <- c(entity$match, 
-                                     entity$alternativematch, 
-                                     entity$party_name[!entity$party_name %in% "Independent"]) %>% unique #entity$nicknamematch
-                         entits <- entits[!entits %in% c("", "Independent")]
+                         entits <- c("Esmonde") # to test for specific matches
+                         # entity <- entities %>% filter(legper==currentdail)
+                         # entits <- c(entity$match, 
+                         #             entity$alternativematch, 
+                         #             entity$party_name[!entity$party_name %in% "Independent"]) %>% unique #entity$nicknamematch
+                         # entits <- entits[!entits %in% c("", "Independent")]
                          dfs %>% corpus(text_field = 'speech', docid_field = 'speechID') %>% 
                            tokens(remove_punct = F) %>% 
-                           kwic(pattern=phrase(entits), window=W, case_insensitive = F) %>% 
-                           merge(dfs,., by.x = "speechID", by.y="docname")
+                           kwic(pattern=phrase(entits), window=W, case_insensitive = F) 
+                         # %>% merge(dfs,., by.x = "speechID", by.y="docname") # matching can either happen in the loop or after the loop
                        }; print(Sys.time()-start); stopCluster(cl); beep(10)
 
-df_windows <- merge(df, df_windows, by.x = "speechID", by.y="docname")
+df_windows1 <- right_join(df, df_windows %>% mutate(speechID = as.numeric(docname)), by = c("speechID"))
+
+
+df_windows1 <- merge(df, df_windows, by.x = "speechID", by.y="docname") # this was docname...
+
+df_windows %>% names()
+df_windows1 %>% names()
 
 # backup <- df_windows
 
